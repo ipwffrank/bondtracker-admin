@@ -113,7 +113,7 @@ export default function Users() {
 
   const openEdit = (user) => {
     setSelectedUser(user);
-    setEditState({ isAdmin: user.isAdmin || false, organizationId: user.organizationId || '' });
+    setEditState({ name: user.name || '', isAdmin: user.isAdmin || false, organizationId: user.organizationId || '' });
     setSaved(false);
   };
 
@@ -125,10 +125,12 @@ export default function Users() {
     try {
       const org = orgs.find(o => o.id === editState.organizationId);
       const roleData = { isAdmin: editState.isAdmin, role: editState.isAdmin ? 'admin' : 'user' };
+      const nameData = editState.name.trim() ? { name: editState.name.trim() } : {};
 
       // 1. Update root users document
       await updateDoc(doc(db, 'users', selectedUser.id), {
         ...roleData,
+        ...nameData,
         organizationId: editState.organizationId,
         organizationName: org?.name || editState.organizationId,
       });
@@ -137,7 +139,7 @@ export default function Users() {
       if (editState.organizationId) {
         await setDoc(
           doc(db, 'organizations', editState.organizationId, 'users', selectedUser.id),
-          roleData,
+          { ...roleData, ...nameData },
           { merge: true }
         );
       }
@@ -150,8 +152,8 @@ export default function Users() {
       }
 
       setSaved(true);
-      // Refresh selected user state to reflect new org
-      setSelectedUser(prev => ({ ...prev, ...roleData, organizationId: editState.organizationId, organizationName: org?.name || editState.organizationId }));
+      // Refresh selected user state to reflect changes
+      setSelectedUser(prev => ({ ...prev, ...roleData, ...nameData, organizationId: editState.organizationId, organizationName: org?.name || editState.organizationId }));
       setTimeout(() => setSaved(false), 2000);
     } catch (err) {
       alert('Save failed: ' + err.message);
@@ -249,6 +251,11 @@ export default function Users() {
                 const t = formatTime(selectedUser.lastLogin);
                 return <div style={{ fontSize: '11px', color: '#475569', marginTop: '4px' }}>Last login: {t.line1}{t.line2 ? ` · ${t.line2}` : ''}</div>;
               })()}
+            </div>
+
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#64748b', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Name</label>
+              <input value={editState.name} onChange={e => setEditState(s => ({ ...s, name: e.target.value }))} placeholder="First Last" style={{ width: '100%', padding: '8px 12px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Outfit', sans-serif", boxSizing: 'border-box' }} />
             </div>
 
             <div style={{ marginBottom: '14px' }}>

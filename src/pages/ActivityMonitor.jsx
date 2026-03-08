@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebase';
+import HoverBreakdown from '../components/HoverBreakdown';
 
 const STATUS_COLORS = { EXECUTED: '#10b981', ENQUIRY: '#3b82f6', QUOTED: '#f59e0b', PASSED: '#64748b', 'TRADED AWAY': '#ef4444' };
 const DIR_COLORS = { BUY: '#10b981', SELL: '#ef4444', 'TWO-WAY': '#8b5cf6' };
@@ -48,6 +49,12 @@ function timeAgo(ts) {
   if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
   if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function fmtDate(ts) {
+  if (!ts) return '';
+  const d = ts.toDate?.() || new Date(ts);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 export default function ActivityMonitor() {
@@ -128,7 +135,7 @@ export default function ActivityMonitor() {
 
   const orgActivity = {};
   activities.forEach(a => { orgActivity[a.orgId] = (orgActivity[a.orgId] || 0) + 1; });
-  const topOrgs = Object.entries(orgActivity).map(([id, count]) => ({ name: orgNames[id] || id, count })).sort((a, b) => b.count - a.count).slice(0, 8);
+  const topOrgs = Object.entries(orgActivity).map(([id, count]) => ({ id, name: orgNames[id] || id, count })).sort((a, b) => b.count - a.count).slice(0, 8);
   const maxOrgCount = Math.max(...topOrgs.map(o => o.count), 1);
 
   const pct = (fn) => total > 0 ? Math.round(filtered.filter(fn).length / total * 100) : 0;
@@ -149,6 +156,53 @@ export default function ActivityMonitor() {
   const topTypes = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]).slice(0, 3);
   const maxType = Math.max(...topTypes.map(t => t[1]), 1);
 
+  // --- Breakdown helpers ---
+  const actHeaders = ['Organization', 'Client', 'Ticker/ISIN', 'Direction', 'Status', 'Price', 'Size', 'Date'];
+  const actRow = (a) => [a.orgName || '', a.clientName || '', a.ticker || a.isin || '', a.direction || '', a.status || '', a.price ?? '', a.size ?? '', fmtDate(a.createdAt)];
+
+  // Org breakdown for stat cards
+  const orgBreakdownRows = () => {
+    const map = {};
+    filtered.forEach(a => { map[a.orgName] = (map[a.orgName] || 0) + 1; });
+    return Object.entries(map).sort((a, b) => b[1] - a[1]).map(([name, count]) => [name, count]);
+  };
+
+  // Stat card configs
+  const statCards = [
+    {
+      label: 'Total Activities', value: total, sub: `${todayCount} today`,
+      bTitle: 'Activities by Org', bHeaders: ['Organization', 'Count'], bRows: orgBreakdownRows(), bFile: 'activities_by_org.csv',
+    },
+    {
+      label: 'Executed', value: executed, sub: `${execRate}% of total`, color: '#10b981',
+      bTitle: 'Executed Activities', bHeaders: actHeaders, bRows: filtered.filter(a => a.status === 'EXECUTED').map(actRow), bFile: 'executed_activities.csv',
+    },
+    {
+      label: 'Price Fill Rate', value: `${priceRate}%`, sub: 'activities with price',
+      color: priceRate >= 75 ? '#10b981' : priceRate >= 50 ? '#f59e0b' : '#ef4444',
+      bTitle: 'Activities with Price', bHeaders: actHeaders, bRows: filtered.filter(a => a.price != null && a.price !== '').map(actRow), bFile: 'price_filled.csv',
+    },
+    {
+      label: 'Notes Fill Rate', value: `${notesRate}%`, sub: 'activities with notes',
+      color: notesRate >= 75 ? '#10b981' : notesRate >= 50 ? '#f59e0b' : '#ef4444',
+      bTitle: 'Activities with Notes', bHeaders: actHeaders, bRows: filtered.filter(a => a.notes?.trim?.()?.length > 0).map(actRow), bFile: 'notes_filled.csv',
+    },
+    {
+      label: 'Total Clients', value: filteredClients.length,
+      sub: `${new Set(filteredClients.map(c => c.type || c.clientType).filter(Boolean)).size} types across ${new Set(filteredClients.map(c => c.orgId)).size} orgs`, color: '#3b82f6',
+      bTitle: 'All Clients', bHeaders: ['Name', 'Type', 'Region', 'Organization'],
+      bRows: filteredClients.map(c => [c.name || '', c.type || c.clientType || '', c.region || '', c.orgName || '']),
+      bFile: 'clients.csv',
+    },
+    {
+      label: 'New Issues', value: filteredIssues.length,
+      sub: `${filteredIssues.filter(i => (i.createdAt?.toMillis?.() || 0) >= today.getTime()).length} today`, color: '#8b5cf6',
+      bTitle: 'All Issues', bHeaders: ['Issuer', 'Size', 'Currency', 'Organization', 'Date'],
+      bRows: filteredIssues.map(i => [i.issuerName || i.issuer || '', i.targetIssueSize || i.size || '', i.currency || '', i.orgName || '', fmtDate(i.createdAt)]),
+      bFile: 'new_issues.csv',
+    },
+  ];
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
@@ -168,68 +222,101 @@ export default function ActivityMonitor() {
         </div>
       </div>
 
+      {/* Stat cards with hover breakdown */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '24px' }}>
-        {[
-          { label: 'Total Activities', value: total, sub: `${todayCount} today` },
-          { label: 'Executed', value: executed, sub: `${execRate}% of total`, color: '#10b981' },
-          { label: 'Price Fill Rate', value: `${priceRate}%`, sub: 'activities with price', color: priceRate >= 75 ? '#10b981' : priceRate >= 50 ? '#f59e0b' : '#ef4444' },
-          { label: 'Notes Fill Rate', value: `${notesRate}%`, sub: 'activities with notes', color: notesRate >= 75 ? '#10b981' : notesRate >= 50 ? '#f59e0b' : '#ef4444' },
-          { label: 'Total Clients', value: filteredClients.length, sub: `${new Set(filteredClients.map(c => c.type || c.clientType).filter(Boolean)).size} types across ${new Set(filteredClients.map(c => c.orgId)).size} orgs`, color: '#3b82f6' },
-          { label: 'New Issues', value: filteredIssues.length, sub: `${filteredIssues.filter(i => (i.createdAt?.toMillis?.() || 0) >= today.getTime()).length} today`, color: '#8b5cf6' },
-        ].map(card => (
-          <div key={card.label} style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', padding: '18px 20px' }}>
-            <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>{card.label}</div>
-            <div style={{ fontSize: '30px', fontWeight: '700', color: card.color || '#f8fafc', lineHeight: 1 }}>{card.value}</div>
-            {card.sub && <div style={{ fontSize: '12px', color: '#64748b', marginTop: '5px' }}>{card.sub}</div>}
-          </div>
+        {statCards.map(card => (
+          <HoverBreakdown key={card.label} title={card.bTitle} headers={card.bHeaders} rows={card.bRows} csvFilename={card.bFile}>
+            <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', padding: '18px 20px' }}>
+              <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>{card.label}</div>
+              <div style={{ fontSize: '30px', fontWeight: '700', color: card.color || '#f8fafc', lineHeight: 1 }}>{card.value}</div>
+              {card.sub && <div style={{ fontSize: '12px', color: '#64748b', marginTop: '5px' }}>{card.sub}</div>}
+            </div>
+          </HoverBreakdown>
         ))}
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+        {/* Activity by Status */}
         <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', padding: '20px' }}>
           <div style={{ fontSize: '14px', fontWeight: '600', color: '#f8fafc', marginBottom: '16px' }}>Activity by Status</div>
-          {STATUSES.map(s => <BarMetric key={s} label={s} value={statusCounts[s] || 0} max={maxStatus} color={STATUS_COLORS[s]} pct={total > 0 ? Math.round((statusCounts[s] || 0) / total * 100) : 0} />)}
+          {STATUSES.map(s => {
+            const items = filtered.filter(a => a.status === s);
+            return (
+              <HoverBreakdown key={s} title={`${s} Activities`} headers={actHeaders} rows={items.map(actRow)} csvFilename={`status_${s.toLowerCase().replace(/\s/g, '_')}.csv`}>
+                <BarMetric label={s} value={statusCounts[s] || 0} max={maxStatus} color={STATUS_COLORS[s]} pct={total > 0 ? Math.round((statusCounts[s] || 0) / total * 100) : 0} />
+              </HoverBreakdown>
+            );
+          })}
         </div>
+        {/* Activity by Direction + Types */}
         <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', padding: '20px' }}>
           <div style={{ fontSize: '14px', fontWeight: '600', color: '#f8fafc', marginBottom: '16px' }}>Activity by Direction</div>
-          {DIRECTIONS.map(d => <BarMetric key={d} label={d} value={dirCounts[d] || 0} max={maxDir} color={DIR_COLORS[d]} pct={total > 0 ? Math.round((dirCounts[d] || 0) / total * 100) : 0} />)}
+          {DIRECTIONS.map(d => {
+            const items = filtered.filter(a => a.direction === d);
+            return (
+              <HoverBreakdown key={d} title={`${d} Activities`} headers={actHeaders} rows={items.map(actRow)} csvFilename={`direction_${d.toLowerCase().replace(/\s/g, '_')}.csv`}>
+                <BarMetric label={d} value={dirCounts[d] || 0} max={maxDir} color={DIR_COLORS[d]} pct={total > 0 ? Math.round((dirCounts[d] || 0) / total * 100) : 0} />
+              </HoverBreakdown>
+            );
+          })}
           <div style={{ borderTop: '1px solid #1E3557', marginTop: '16px', paddingTop: '16px' }}>
             <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Activity Types</div>
-            {topTypes.map(([type, count]) => <BarMetric key={type} label={type} value={count} max={maxType} color="#8b5cf6" pct={total > 0 ? Math.round(count / total * 100) : 0} />)}
+            {topTypes.map(([type, count]) => {
+              const items = filtered.filter(a => a.activityType === type);
+              return (
+                <HoverBreakdown key={type} title={`${type} Activities`} headers={actHeaders} rows={items.map(actRow)} csvFilename={`type_${type.toLowerCase().replace(/\s/g, '_')}.csv`}>
+                  <BarMetric label={type} value={count} max={maxType} color="#8b5cf6" pct={total > 0 ? Math.round(count / total * 100) : 0} />
+                </HoverBreakdown>
+              );
+            })}
           </div>
         </div>
+        {/* Most Active Organizations */}
         <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', padding: '20px' }}>
           <div style={{ fontSize: '14px', fontWeight: '600', color: '#f8fafc', marginBottom: '16px' }}>Most Active Organizations</div>
-          {topOrgs.length === 0 ? <div style={{ color: '#64748b', fontSize: '13px' }}>No activity data.</div> : topOrgs.map((org, i) => (
-            <div key={org.name} style={{ marginBottom: '10px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span style={{ fontSize: '10px', fontWeight: '700', color: '#0F2137', background: ['#C8A258', '#3b82f6', '#8b5cf6', '#f59e0b'][i] || '#64748b', width: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{i + 1}</span>
-                  <span style={{ fontSize: '13px', color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' }}>{org.name}</span>
+          {topOrgs.length === 0 ? <div style={{ color: '#64748b', fontSize: '13px' }}>No activity data.</div> : topOrgs.map((org, i) => {
+            const orgActs = activities.filter(a => a.orgId === org.id);
+            return (
+              <HoverBreakdown key={org.name} title={`${org.name} Activities`} headers={actHeaders} rows={orgActs.map(actRow)} csvFilename={`org_${org.name.toLowerCase().replace(/\s/g, '_')}.csv`}>
+                <div style={{ marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span style={{ fontSize: '10px', fontWeight: '700', color: '#0F2137', background: ['#C8A258', '#3b82f6', '#8b5cf6', '#f59e0b'][i] || '#64748b', width: '16px', height: '16px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{i + 1}</span>
+                      <span style={{ fontSize: '13px', color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' }}>{org.name}</span>
+                    </div>
+                    <span style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc' }}>{org.count}</span>
+                  </div>
+                  <div style={{ height: '5px', background: '#0B1520', borderRadius: '100px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: ['#C8A258', '#3b82f6', '#8b5cf6', '#f59e0b'][i] || '#64748b', borderRadius: '100px', width: `${Math.round(org.count / maxOrgCount * 100)}%`, transition: 'width 0.5s ease' }} />
+                  </div>
                 </div>
-                <span style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc' }}>{org.count}</span>
-              </div>
-              <div style={{ height: '5px', background: '#0B1520', borderRadius: '100px', overflow: 'hidden' }}>
-                <div style={{ height: '100%', background: ['#C8A258', '#3b82f6', '#8b5cf6', '#f59e0b'][i] || '#64748b', borderRadius: '100px', width: `${Math.round(org.count / maxOrgCount * 100)}%`, transition: 'width 0.5s ease' }} />
-              </div>
-            </div>
-          ))}
+              </HoverBreakdown>
+            );
+          })}
         </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
+        {/* Client Directory */}
         <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', padding: '20px' }}>
           <div style={{ fontSize: '14px', fontWeight: '600', color: '#f8fafc', marginBottom: '4px' }}>Client Directory</div>
           <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px' }}>{filteredClients.length} clients across all organizations</div>
           {(() => {
-            const typeCounts = {};
-            filteredClients.forEach(c => { const t = c.type || c.clientType || 'OTHER'; typeCounts[t] = (typeCounts[t] || 0) + 1; });
-            const entries = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
+            const tCounts = {};
+            filteredClients.forEach(c => { const t = c.type || c.clientType || 'OTHER'; tCounts[t] = (tCounts[t] || 0) + 1; });
+            const entries = Object.entries(tCounts).sort((a, b) => b[1] - a[1]);
             const maxVal = Math.max(...entries.map(e => e[1]), 1);
             const TYPE_COLORS = { FUND: '#3b82f6', BANK: '#C8A258', INSURANCE: '#10b981', PENSION: '#f59e0b', SOVEREIGN: '#8b5cf6', 'HEDGE FUND': '#ec4899', CORPORATE: '#06b6d4', OTHER: '#64748b' };
             return entries.length === 0
               ? <div style={{ color: '#64748b', fontSize: '13px' }}>No client data.</div>
-              : entries.map(([type, count]) => <BarMetric key={type} label={type} value={count} max={maxVal} color={TYPE_COLORS[type] || '#64748b'} pct={filteredClients.length > 0 ? Math.round(count / filteredClients.length * 100) : 0} />);
+              : entries.map(([type, count]) => {
+                const items = filteredClients.filter(c => (c.type || c.clientType || 'OTHER') === type);
+                return (
+                  <HoverBreakdown key={type} title={`${type} Clients`} headers={['Name', 'Region', 'Organization']} rows={items.map(c => [c.name || '', c.region || '', c.orgName || ''])} csvFilename={`clients_${type.toLowerCase().replace(/\s/g, '_')}.csv`}>
+                    <BarMetric label={type} value={count} max={maxVal} color={TYPE_COLORS[type] || '#64748b'} pct={filteredClients.length > 0 ? Math.round(count / filteredClients.length * 100) : 0} />
+                  </HoverBreakdown>
+                );
+              });
           })()}
           <div style={{ borderTop: '1px solid #1E3557', marginTop: '16px', paddingTop: '16px' }}>
             <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>By Region</div>
@@ -241,10 +328,18 @@ export default function ActivityMonitor() {
               const REGION_COLORS = { APAC: '#3b82f6', EMEA: '#C8A258', AMERICAS: '#10b981', UNSPECIFIED: '#64748b' };
               return entries.length === 0
                 ? <div style={{ color: '#64748b', fontSize: '13px' }}>No region data.</div>
-                : entries.map(([region, count]) => <BarMetric key={region} label={region} value={count} max={maxVal} color={REGION_COLORS[region] || '#64748b'} />);
+                : entries.map(([region, count]) => {
+                  const items = filteredClients.filter(c => (c.region || 'UNSPECIFIED') === region);
+                  return (
+                    <HoverBreakdown key={region} title={`${region} Clients`} headers={['Name', 'Type', 'Organization']} rows={items.map(c => [c.name || '', c.type || c.clientType || '', c.orgName || ''])} csvFilename={`clients_${region.toLowerCase()}.csv`}>
+                      <BarMetric label={region} value={count} max={maxVal} color={REGION_COLORS[region] || '#64748b'} />
+                    </HoverBreakdown>
+                  );
+                });
             })()}
           </div>
         </div>
+        {/* New Issues Pipeline */}
         <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', padding: '20px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ fontSize: '14px', fontWeight: '600', color: '#f8fafc', marginBottom: '4px' }}>New Issues Pipeline</div>
           <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px' }}>{filteredIssues.length} issues tracked</div>
@@ -256,7 +351,14 @@ export default function ActivityMonitor() {
             const CURR_COLORS = { USD: '#10b981', EUR: '#3b82f6', GBP: '#C8A258', JPY: '#f59e0b', CNY: '#ef4444', AUD: '#8b5cf6', SGD: '#06b6d4', HKD: '#ec4899', 'N/A': '#64748b' };
             return entries.length === 0
               ? <div style={{ color: '#64748b', fontSize: '13px' }}>No issue data.</div>
-              : entries.map(([curr, count]) => <BarMetric key={curr} label={curr} value={count} max={maxVal} color={CURR_COLORS[curr] || '#64748b'} pct={filteredIssues.length > 0 ? Math.round(count / filteredIssues.length * 100) : 0} />);
+              : entries.map(([curr, count]) => {
+                const items = filteredIssues.filter(i => (i.currency || 'N/A') === curr);
+                return (
+                  <HoverBreakdown key={curr} title={`${curr} Issues`} headers={['Issuer', 'Size', 'Organization', 'Date']} rows={items.map(i => [i.issuerName || i.issuer || '', i.targetIssueSize || i.size || '', i.orgName || '', fmtDate(i.createdAt)])} csvFilename={`issues_${curr.toLowerCase()}.csv`}>
+                    <BarMetric label={curr} value={count} max={maxVal} color={CURR_COLORS[curr] || '#64748b'} pct={filteredIssues.length > 0 ? Math.round(count / filteredIssues.length * 100) : 0} />
+                  </HoverBreakdown>
+                );
+              });
           })()}
           <div style={{ borderTop: '1px solid #1E3557', marginTop: '16px', paddingTop: '16px', flex: 1 }}>
             <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '10px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Recent Issues</div>
@@ -276,20 +378,28 @@ export default function ActivityMonitor() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '20px' }}>
+        {/* Input Quality */}
         <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', padding: '20px' }}>
           <div style={{ fontSize: '14px', fontWeight: '600', color: '#f8fafc', marginBottom: '4px' }}>Input Quality</div>
           <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '16px' }}>Field completion rates</div>
-          <QualityBar label="Client Name" rate={clientRate} />
-          <QualityBar label="Price" rate={priceRate} />
-          <QualityBar label="Size" rate={sizeRate} />
-          <QualityBar label="ISIN" rate={isinRate} />
-          <QualityBar label="Notes / Commentary" rate={notesRate} />
+          {[
+            { label: 'Client Name', rate: clientRate, filter: a => a.clientName?.trim?.()?.length > 0 },
+            { label: 'Price', rate: priceRate, filter: a => a.price != null && a.price !== '' },
+            { label: 'Size', rate: sizeRate, filter: a => String(a.size || '').trim().length > 0 },
+            { label: 'ISIN', rate: isinRate, filter: a => a.isin?.trim?.()?.length > 0 },
+            { label: 'Notes / Commentary', rate: notesRate, filter: a => a.notes?.trim?.()?.length > 0 },
+          ].map(q => (
+            <HoverBreakdown key={q.label} title={`Activities with ${q.label}`} headers={actHeaders} rows={filtered.filter(q.filter).map(actRow)} csvFilename={`quality_${q.label.toLowerCase().replace(/\s/g, '_')}.csv`}>
+              <QualityBar label={q.label} rate={q.rate} />
+            </HoverBreakdown>
+          ))}
           <div style={{ marginTop: '16px', padding: '12px', background: '#0B1520', borderRadius: '8px' }}>
             <div style={{ fontSize: '11px', color: '#64748b', marginBottom: '4px' }}>Overall Completeness</div>
             <div style={{ fontSize: '26px', fontWeight: '700', color: '#f8fafc' }}>{Math.round((clientRate + priceRate + sizeRate + isinRate + notesRate) / 5)}%</div>
             <div style={{ fontSize: '11px', color: '#64748b' }}>avg across all fields</div>
           </div>
         </div>
+        {/* Recent Activity Feed */}
         <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', overflow: 'hidden' }}>
           <div style={{ padding: '16px 20px', borderBottom: '1px solid #1E3557' }}>
             <div style={{ fontSize: '14px', fontWeight: '600', color: '#f8fafc' }}>Recent Activity Feed</div>

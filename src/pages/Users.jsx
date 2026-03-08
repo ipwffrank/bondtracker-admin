@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { collection, doc, onSnapshot, getDoc, updateDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 
@@ -44,8 +44,9 @@ export default function Users() {
   const [editState, setEditState] = useState({ isAdmin: false, organizationId: '' });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [demoRequests, setDemoRequests] = useState([]);
 
-  // Subscribe to users and orgs
+  // Subscribe to users, orgs, and demoRequests
   useEffect(() => {
     const unsubUsers = onSnapshot(collection(db, 'users'), snap => {
       setUsers(snap.docs.map(d => ({ id: d.id, ...d.data() })));
@@ -56,8 +57,21 @@ export default function Users() {
       setOrgs(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
 
-    return () => { unsubUsers(); unsubOrgs(); };
+    const unsubDemo = onSnapshot(collection(db, 'demoRequests'), snap => {
+      setDemoRequests(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+
+    return () => { unsubUsers(); unsubOrgs(); unsubDemo(); };
   }, []);
+
+  // Build email → phone lookup from demoRequests
+  const phoneByEmail = useMemo(() => {
+    const map = {};
+    demoRequests.forEach(d => {
+      if (d.email && d.phone) map[d.email.toLowerCase()] = d.phone;
+    });
+    return map;
+  }, [demoRequests]);
 
   // Load org-level details (lastLogin, isAdmin, role) for each user
   useEffect(() => {
@@ -174,9 +188,10 @@ export default function Users() {
         </div>
 
         <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', overflow: 'hidden' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 1fr 70px', padding: '10px 16px', borderBottom: '1px solid #1E3557', fontSize: '11px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1.2fr 1fr 1fr 70px', padding: '10px 16px', borderBottom: '1px solid #1E3557', fontSize: '11px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             <span>User</span>
             <span>Organization</span>
+            <span>Phone</span>
             <span>Role</span>
             <span>Last Login</span>
             <span />
@@ -188,12 +203,13 @@ export default function Users() {
           ) : filtered.map(user => {
             const t = formatTime(user.lastLogin);
             return (
-              <div key={user.id} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr 1fr 70px', padding: '12px 16px', borderBottom: '1px solid #0B1520', alignItems: 'center', background: selectedUser?.id === user.id ? 'rgba(200,162,88,0.06)' : 'transparent', borderLeft: selectedUser?.id === user.id ? '2px solid #C8A258' : '2px solid transparent' }}>
+              <div key={user.id} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1.2fr 1fr 1fr 70px', padding: '12px 16px', borderBottom: '1px solid #0B1520', alignItems: 'center', background: selectedUser?.id === user.id ? 'rgba(200,162,88,0.06)' : 'transparent', borderLeft: selectedUser?.id === user.id ? '2px solid #C8A258' : '2px solid transparent' }}>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: '13px', fontWeight: '600', color: '#f8fafc' }}>{user.name}</div>
                   <div style={{ fontSize: '12px', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</div>
                 </div>
                 <div style={{ fontSize: '13px', color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.organizationName || user.organizationId || '—'}</div>
+                <div style={{ fontSize: '12px', color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{phoneByEmail[user.email?.toLowerCase()] || '—'}</div>
                 <div><RoleBadge isAdmin={user.isAdmin} /></div>
                 <div>
                   <div style={{ fontSize: '12px', color: '#94a3b8' }}>{t.line1}</div>
@@ -226,6 +242,9 @@ export default function Users() {
             <div style={{ marginBottom: '16px' }}>
               <div style={{ fontSize: '15px', fontWeight: '600', color: '#f8fafc' }}>{selectedUser.name}</div>
               <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>{selectedUser.email}</div>
+              {phoneByEmail[selectedUser.email?.toLowerCase()] && (
+                <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>{phoneByEmail[selectedUser.email?.toLowerCase()]}</div>
+              )}
               {selectedUser.lastLogin && (() => {
                 const t = formatTime(selectedUser.lastLogin);
                 return <div style={{ fontSize: '11px', color: '#475569', marginTop: '4px' }}>Last login: {t.line1}{t.line2 ? ` · ${t.line2}` : ''}</div>;

@@ -98,7 +98,7 @@ export default function DemoLeads() {
         invitedBy: 'Host Admin', status: 'pending', emailSent: false,
         createdAt: serverTimestamp(), expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       });
-      const link = `${PROD_URL}/accept-invite?org=${orgId}&invitation=${invRef.id}`;
+      const link = `${PROD_URL}/accept-invite?org=${orgId}&token=${invRef.id}`;
       setInviteLink(link);
       setEmailSent(false);
       setEmailError('');

@@ -23,7 +23,7 @@ function GuardedLayout({ children }) {
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       <Sidebar />
-      <main style={{ flex: 1, marginLeft: '220px', padding: '32px 36px', minHeight: '100vh', overflow: 'auto' }}>
+      <main style={{ flex: 1, marginLeft: '220px', padding: '32px 36px', minHeight: '100vh', overflow: 'auto', background: '#0F2137' }}>
         {children}
       </main>
     </div>

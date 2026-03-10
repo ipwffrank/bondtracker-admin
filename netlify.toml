@@ -1,9 +1,8 @@
 [build]
-  command = "mkdir -p dist && echo 'Redirecting' > dist/index.html"
+  command = "npm run build"
   publish = "dist"
 
 [[redirects]]
   from = "/*"
-  to = "https://www.axle-finance.com/hostadmin"
-  status = 301
-  force = true
+  to = "/index.html"
+  status = 200

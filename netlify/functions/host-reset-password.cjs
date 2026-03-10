@@ -41,7 +41,7 @@ exports.handler = async (event) => {
 
     const resend = new Resend(process.env.RESEND_API_KEY);
 
-    await resend.emails.send({
+    const { data, error: resendError } = await resend.emails.send({
       from: 'Axle <info@axle-finance.com>',
       to: email,
       subject: 'Reset Your Axle Password',
@@ -79,6 +79,11 @@ exports.handler = async (event) => {
         </html>
       `,
     });
+
+    if (resendError) {
+      console.error('Resend error:', resendError);
+      return { statusCode: 500, body: JSON.stringify({ error: `Email send failed: ${resendError.message}` }) };
+    }
 
     return {
       statusCode: 200,

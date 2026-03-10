@@ -25,7 +25,6 @@ export default function Logo({ variant = 'dark', size = 'md', animated = true })
       <style>{rotorStyle}</style>
       <div style={{ display: 'flex', alignItems: 'center', gap: `${s.mark * 0.3}px` }}>
         <svg width={s.mark} height={s.mark} viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ color: gold, display: 'block' }}>
-          <circle cx="22" cy="22" r="18" stroke="currentColor" strokeWidth="0.8" fill="none" opacity="0.15" strokeDasharray="3 4" />
           <g className={animated ? 'axle-rotor-blades' : undefined}>
             <path d="M22 8 Q30 14 28 22" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" fill="none" />
             <path d="M34 28 Q28 34 22 32" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" fill="none" opacity="0.7" />

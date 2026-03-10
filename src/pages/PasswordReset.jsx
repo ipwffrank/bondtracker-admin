@@ -14,10 +14,10 @@ export default function PasswordReset() {
     setLoading(true);
     setMessage(null);
     try {
-      const res = await fetch('https://www.axle-finance.com/.netlify/functions/host-reset-password', {
+      const res = await fetch('/.netlify/functions/host-reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim(), hostKey: window.__HOST_KEY || prompt('Enter Host Admin Key:') }),
+        body: JSON.stringify({ email: email.trim() }),
       });
       let data;
       try { data = await res.json(); } catch { data = { error: `HTTP ${res.status}` }; }

@@ -4,7 +4,7 @@ import { db } from '../firebase';
 
 const STATUSES = ['NEW', 'CONTACTED', 'DEMO SCHEDULED', 'ONBOARDING', 'ACTIVE', 'REJECTED'];
 const STATUS_COLORS = { NEW: '#3b82f6', CONTACTED: '#f59e0b', 'DEMO SCHEDULED': '#8b5cf6', ONBOARDING: '#10b981', ACTIVE: '#059669', REJECTED: '#ef4444' };
-const PROD_URL = 'https://axle-finance.netlify.app';
+const PROD_URL = 'https://axle-finance.com';
 
 function StatusBadge({ status }) {
   const s = status || 'NEW';

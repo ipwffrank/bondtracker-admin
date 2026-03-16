@@ -1,12 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
+import { useAuth } from '../contexts/AuthContext';
+
+const PLAN_OPTIONS = [
+  { value: 'essentials', label: 'Essentials', color: '#64748b' },
+  { value: 'professional', label: 'Professional', color: '#C8A258' },
+  { value: 'institutional', label: 'Institutional', color: '#16a34a' },
+];
 
 export default function Organizations() {
+  const { hostUser } = useAuth();
   const [orgs, setOrgs] = useState([]);
   const [userCounts, setUserCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [updatingPlan, setUpdatingPlan] = useState(null); // orgId being updated
+
+  async function handlePlanChange(orgId, newPlan) {
+    setUpdatingPlan(orgId);
+    try {
+      await updateDoc(doc(db, 'organizations', orgId), {
+        plan: newPlan,
+        planUpdatedAt: serverTimestamp(),
+        planUpdatedBy: hostUser?.email || 'host-admin',
+      });
+    } catch (err) {
+      console.error('Failed to update plan:', err);
+      alert('Failed to update plan: ' + err.message);
+    } finally {
+      setUpdatingPlan(null);
+    }
+  }
 
   useEffect(() => {
     const unsubOrgs = onSnapshot(collection(db, 'organizations'), snap => {
@@ -58,15 +83,18 @@ export default function Organizations() {
       </div>
 
       <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', overflow: 'hidden' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 3fr 80px 1fr', padding: '10px 20px', borderBottom: '1px solid #1E3557', fontSize: '11px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          <span>Organization</span><span>Org ID</span><span>Users</span><span>Created</span>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 2.5fr 80px 160px 1fr', padding: '10px 20px', borderBottom: '1px solid #1E3557', fontSize: '11px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <span>Organization</span><span>Org ID</span><span>Users</span><span>Plan</span><span>Created</span>
         </div>
         {loading ? (
           <div style={{ padding: '48px', textAlign: 'center', color: '#64748b' }}>Loading...</div>
         ) : filtered.length === 0 ? (
           <div style={{ padding: '48px', textAlign: 'center', color: '#64748b' }}>{orgs.length === 0 ? 'No organizations yet.' : 'No results match your search.'}</div>
-        ) : filtered.map(org => (
-          <div key={org.id} style={{ display: 'grid', gridTemplateColumns: '2fr 3fr 80px 1fr', padding: '14px 20px', borderBottom: '1px solid #0B1520', alignItems: 'center' }}>
+        ) : filtered.map(org => {
+          const currentPlan = org.plan || 'essentials';
+          const planInfo = PLAN_OPTIONS.find(p => p.value === currentPlan) || PLAN_OPTIONS[0];
+          return (
+          <div key={org.id} style={{ display: 'grid', gridTemplateColumns: '2fr 2.5fr 80px 160px 1fr', padding: '14px 20px', borderBottom: '1px solid #0B1520', alignItems: 'center' }}>
             <div style={{ fontSize: '14px', fontWeight: '600', color: '#f8fafc' }}>{org.name || org.id}</div>
             <div style={{ fontSize: '12px', color: '#64748b', fontFamily: "'JetBrains Mono', monospace", background: '#0B1520', padding: '3px 8px', borderRadius: '4px', display: 'inline-block', letterSpacing: '0.02em' }}>{org.id}</div>
             <div>
@@ -74,9 +102,35 @@ export default function Organizations() {
                 {userCounts[org.id] || 0}
               </span>
             </div>
+            <div>
+              <select
+                value={currentPlan}
+                onChange={e => handlePlanChange(org.id, e.target.value)}
+                disabled={updatingPlan === org.id}
+                style={{
+                  padding: '5px 10px',
+                  background: '#0B1520',
+                  border: `1px solid ${planInfo.color}40`,
+                  borderRadius: '6px',
+                  color: planInfo.color,
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  fontFamily: "'Outfit', sans-serif",
+                  cursor: 'pointer',
+                  letterSpacing: '0.03em',
+                  textTransform: 'uppercase',
+                  opacity: updatingPlan === org.id ? 0.5 : 1,
+                }}
+              >
+                {PLAN_OPTIONS.map(p => (
+                  <option key={p.value} value={p.value}>{p.label}</option>
+                ))}
+              </select>
+            </div>
             <div style={{ fontSize: '12px', color: '#64748b' }}>{formatDate(org.createdAt)}</div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {orgs.length > 0 && (

@@ -12,6 +12,7 @@ import Analytics from './pages/Analytics';
 import HostAdmins from './pages/HostAdmins';
 import AuditTrail from './pages/AuditTrail';
 import PasswordReset from './pages/PasswordReset';
+import Maintenance from './pages/Maintenance';
 
 function GuardedLayout({ children }) {
   const { hostUser, loading, isHost } = useAuth();
@@ -56,6 +57,7 @@ function AppRoutes() {
       <Route path="/host-admins" element={<GuardedLayout><HostAdmins /></GuardedLayout>} />
       <Route path="/audit-trail" element={<GuardedLayout><AuditTrail /></GuardedLayout>} />
       <Route path="/password-reset" element={<GuardedLayout><PasswordReset /></GuardedLayout>} />
+      <Route path="/maintenance" element={<GuardedLayout><Maintenance /></GuardedLayout>} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

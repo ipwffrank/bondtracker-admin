@@ -13,7 +13,7 @@ const rotorStyle = `
 }
 `;
 
-export default function Logo({ variant = 'dark', size = 'md', animated = true }) {
+export default function Logo({ variant = 'dark', size = 'md', animated = true, iconOnly = false }) {
   const s = sizes[size] || sizes.md;
   const isDark = variant === 'dark';
   const gold = isDark ? '#C8A258' : '#0F2137';
@@ -33,7 +33,7 @@ export default function Logo({ variant = 'dark', size = 'md', animated = true })
           <circle cx="22" cy="22" r="4" fill="currentColor" />
           <circle cx="22" cy="22" r="1.8" fill={bg} />
         </svg>
-        <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: `${s.wordmark}px`, fontWeight: 700, color: text, letterSpacing: '4px' }}>AXLE</span>
+        {!iconOnly && <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: `${s.wordmark}px`, fontWeight: 700, color: text, letterSpacing: '4px' }}>AXLE</span>}
       </div>
     </>
   );

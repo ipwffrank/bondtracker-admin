@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import Sidebar from './components/Sidebar';
+import Sidebar, { SIDEBAR_EXPANDED, SIDEBAR_COLLAPSED } from './components/Sidebar';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import DemoLeads from './pages/DemoLeads';
@@ -15,6 +15,8 @@ import PasswordReset from './pages/PasswordReset';
 
 function GuardedLayout({ children }) {
   const { hostUser, loading, isHost } = useAuth();
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', background: '#0F2137', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', fontFamily: "'Outfit', sans-serif" }}>
@@ -25,8 +27,16 @@ function GuardedLayout({ children }) {
   if (!hostUser || !isHost) return <Navigate to="/login" replace />;
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <Sidebar />
-      <main style={{ flex: 1, marginLeft: '220px', padding: '32px 36px', minHeight: '100vh', overflow: 'auto', background: '#0F2137' }}>
+      <Sidebar collapsed={sidebarCollapsed} onToggle={() => setSidebarCollapsed(c => !c)} />
+      <main style={{
+        flex: 1,
+        marginLeft: sidebarCollapsed ? `${SIDEBAR_COLLAPSED}px` : `${SIDEBAR_EXPANDED}px`,
+        padding: '32px 36px',
+        minHeight: '100vh',
+        overflow: 'auto',
+        background: '#0F2137',
+        transition: 'margin-left 0.25s ease',
+      }}>
         {children}
       </main>
     </div>

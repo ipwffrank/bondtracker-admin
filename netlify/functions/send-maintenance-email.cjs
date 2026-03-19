@@ -141,7 +141,7 @@ exports.handler = async (event) => {
                       <p style="font-size: 14px; color: #374151;">We apologize for any inconvenience and appreciate your understanding.</p>
 
                       <div class="footer">
-                        <p>&copy; ${new Date().getFullYear()} Alteri LLC. All rights reserved.</p>
+                        <p>&copy; ${new Date().getFullYear()} Bridge Logic LP. All rights reserved.</p>
                         <p style="color: #d1d5db;">This is an automated notification from the Axle platform.</p>
                       </div>
                     </div>

@@ -7,6 +7,6 @@ export default defineConfig({
     preserveSymlinks: true,
   },
   optimizeDeps: {
-    include: ['@alteri/ui'],
+    include: ['@bridgelogic/ui'],
   },
 });

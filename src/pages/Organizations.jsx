@@ -4,9 +4,9 @@ import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 
 const PLAN_OPTIONS = [
-  { value: 'essentials', label: 'Essentials', color: '#64748b' },
-  { value: 'professional', label: 'Professional', color: '#C8A258' },
-  { value: 'institutional', label: 'Institutional', color: '#16a34a' },
+  { value: 'essential', label: 'Essential · $250/user', color: '#64748b' },
+  { value: 'growth', label: 'Growth · $400/user', color: '#C8A258' },
+  { value: 'professional', label: 'Professional · $450/user', color: '#16a34a' },
 ];
 
 export default function Organizations() {
@@ -91,7 +91,7 @@ export default function Organizations() {
         ) : filtered.length === 0 ? (
           <div style={{ padding: '48px', textAlign: 'center', color: '#64748b' }}>{orgs.length === 0 ? 'No organizations yet.' : 'No results match your search.'}</div>
         ) : filtered.map(org => {
-          const currentPlan = org.plan || 'essentials';
+          const currentPlan = org.plan || 'essential';
           const planInfo = PLAN_OPTIONS.find(p => p.value === currentPlan) || PLAN_OPTIONS[0];
           return (
           <div key={org.id} style={{ display: 'grid', gridTemplateColumns: '2fr 2.5fr 80px 160px 1fr', padding: '14px 20px', borderBottom: '1px solid #0B1520', alignItems: 'center' }}>

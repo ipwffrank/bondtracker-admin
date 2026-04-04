@@ -9,6 +9,12 @@ const PLAN_OPTIONS = [
   { value: 'professional', label: 'Professional · $450/user', color: '#16a34a' },
 ];
 
+const TIER_DEFAULTS = {
+  essential: 5,
+  growth: 8,
+  professional: 15,
+};
+
 export default function Organizations() {
   const { hostUser } = useAuth();
   const [orgs, setOrgs] = useState([]);
@@ -16,12 +22,19 @@ export default function Organizations() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [updatingPlan, setUpdatingPlan] = useState(null); // orgId being updated
+  const [editingMaxUsers, setEditingMaxUsers] = useState(null); // { orgId, value }
 
   async function handlePlanChange(orgId, newPlan) {
     setUpdatingPlan(orgId);
     try {
+      const org = orgs.find(o => o.id === orgId);
+      const currentMax = org?.maxUsers || TIER_DEFAULTS[org?.plan] || TIER_DEFAULTS.essential;
+      const newDefault = TIER_DEFAULTS[newPlan] || TIER_DEFAULTS.essential;
+      const newMax = Math.max(currentMax, newDefault);
+
       await updateDoc(doc(db, 'organizations', orgId), {
         plan: newPlan,
+        maxUsers: newMax,
         planUpdatedAt: serverTimestamp(),
         planUpdatedBy: hostUser?.email || 'host-admin',
       });
@@ -31,6 +44,25 @@ export default function Organizations() {
     } finally {
       setUpdatingPlan(null);
     }
+  }
+
+  async function handleMaxUsersChange(orgId, newMax, currentPlan, currentUserCount) {
+    const tierMin = TIER_DEFAULTS[currentPlan] || TIER_DEFAULTS.essential;
+    const validMax = Math.max(newMax, tierMin, currentUserCount || 0);
+
+    if (!Number.isInteger(validMax) || validMax < 1) return;
+
+    try {
+      await updateDoc(doc(db, 'organizations', orgId), {
+        maxUsers: validMax,
+        maxUsersUpdatedAt: serverTimestamp(),
+        maxUsersUpdatedBy: hostUser?.email || 'host-admin',
+      });
+    } catch (err) {
+      console.error('Failed to update maxUsers:', err);
+      alert('Failed to update max users: ' + err.message);
+    }
+    setEditingMaxUsers(null);
   }
 
   useEffect(() => {
@@ -83,8 +115,8 @@ export default function Organizations() {
       </div>
 
       <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', overflow: 'hidden' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 2.5fr 80px 160px 1fr', padding: '10px 20px', borderBottom: '1px solid #1E3557', fontSize: '11px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          <span>Organization</span><span>Org ID</span><span>Users</span><span>Plan</span><span>Created</span>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 2.5fr 80px 100px 160px 1fr', padding: '10px 20px', borderBottom: '1px solid #1E3557', fontSize: '11px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <span>Organization</span><span>Org ID</span><span>Users</span><span>Max Users</span><span>Plan</span><span>Created</span>
         </div>
         {loading ? (
           <div style={{ padding: '48px', textAlign: 'center', color: '#64748b' }}>Loading...</div>
@@ -94,13 +126,43 @@ export default function Organizations() {
           const currentPlan = org.plan || 'essential';
           const planInfo = PLAN_OPTIONS.find(p => p.value === currentPlan) || PLAN_OPTIONS[0];
           return (
-          <div key={org.id} style={{ display: 'grid', gridTemplateColumns: '2fr 2.5fr 80px 160px 1fr', padding: '14px 20px', borderBottom: '1px solid #0B1520', alignItems: 'center' }}>
+          <div key={org.id} style={{ display: 'grid', gridTemplateColumns: '2fr 2.5fr 80px 100px 160px 1fr', padding: '14px 20px', borderBottom: '1px solid #0B1520', alignItems: 'center' }}>
             <div style={{ fontSize: '14px', fontWeight: '600', color: '#f8fafc' }}>{org.name || org.id}</div>
             <div style={{ fontSize: '12px', color: '#64748b', fontFamily: "'JetBrains Mono', monospace", background: '#0B1520', padding: '3px 8px', borderRadius: '4px', display: 'inline-block', letterSpacing: '0.02em' }}>{org.id}</div>
             <div>
               <span style={{ fontSize: '13px', fontWeight: '700', color: '#C8A258', background: 'rgba(200,162,88,0.1)', padding: '3px 10px', borderRadius: '100px', border: '1px solid rgba(200,162,88,0.25)' }}>
                 {userCounts[org.id] || 0}
               </span>
+            </div>
+            <div>
+              <input
+                type="number"
+                value={editingMaxUsers?.orgId === org.id ? editingMaxUsers.value : (org.maxUsers || TIER_DEFAULTS[currentPlan] || TIER_DEFAULTS.essential)}
+                onChange={e => setEditingMaxUsers({ orgId: org.id, value: parseInt(e.target.value) || 0 })}
+                onBlur={() => {
+                  if (editingMaxUsers?.orgId === org.id) {
+                    handleMaxUsersChange(org.id, editingMaxUsers.value, currentPlan, userCounts[org.id] || 0);
+                  }
+                }}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.target.blur();
+                  }
+                }}
+                min={TIER_DEFAULTS[currentPlan] || TIER_DEFAULTS.essential}
+                style={{
+                  width: '60px',
+                  padding: '4px 8px',
+                  background: '#0B1520',
+                  border: '1px solid #1E3557',
+                  borderRadius: '6px',
+                  color: '#f8fafc',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  fontFamily: "'Outfit', sans-serif",
+                  textAlign: 'center',
+                }}
+              />
             </div>
             <div>
               <select

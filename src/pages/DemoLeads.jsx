@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, doc, onSnapshot, updateDoc, setDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, getDoc, onSnapshot, updateDoc, setDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 
 const TIER_DEFAULTS = { essential: 5, essentials: 5, growth: 8, professional: 15 };
@@ -93,7 +93,13 @@ export default function DemoLeads() {
     try {
       const domain = selected.email?.split('@')[1] || orgName.toLowerCase().replace(/\s+/g, '');
       const orgId = 'org_' + domain.replace(/\./g, '_');
-      await setDoc(doc(db, 'organizations', orgId), { name: orgName.trim(), createdAt: serverTimestamp(), maxUsers: TIER_DEFAULTS.essential }, { merge: true });
+      const orgRef = doc(db, 'organizations', orgId);
+      const orgSnap = await getDoc(orgRef);
+      const orgData = { name: orgName.trim(), createdAt: serverTimestamp() };
+      if (!orgSnap.exists()) {
+        orgData.maxUsers = TIER_DEFAULTS.essential;
+      }
+      await setDoc(orgRef, orgData, { merge: true });
       const invRef = await addDoc(collection(db, 'organizations', orgId, 'invitations'), {
         email: selected.email, role: orgRole, organizationId: orgId, organizationName: orgName.trim(),
         invitedBy: 'Host Admin', status: 'pending', emailSent: false,

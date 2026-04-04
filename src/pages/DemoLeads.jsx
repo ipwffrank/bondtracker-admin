@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, doc, onSnapshot, updateDoc, setDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 
+const TIER_DEFAULTS = { essential: 5, essentials: 5, growth: 8, professional: 15 };
 const STATUSES = ['NEW', 'CONTACTED', 'DEMO SCHEDULED', 'ONBOARDING', 'ACTIVE', 'REJECTED'];
 const STATUS_COLORS = { NEW: '#3b82f6', CONTACTED: '#f59e0b', 'DEMO SCHEDULED': '#8b5cf6', ONBOARDING: '#10b981', ACTIVE: '#059669', REJECTED: '#ef4444' };
 const PROD_URL = 'https://axle-finance.com';
@@ -92,7 +93,7 @@ export default function DemoLeads() {
     try {
       const domain = selected.email?.split('@')[1] || orgName.toLowerCase().replace(/\s+/g, '');
       const orgId = 'org_' + domain.replace(/\./g, '_');
-      await setDoc(doc(db, 'organizations', orgId), { name: orgName.trim(), createdAt: serverTimestamp() }, { merge: true });
+      await setDoc(doc(db, 'organizations', orgId), { name: orgName.trim(), createdAt: serverTimestamp(), maxUsers: TIER_DEFAULTS.essential }, { merge: true });
       const invRef = await addDoc(collection(db, 'organizations', orgId, 'invitations'), {
         email: selected.email, role: orgRole, organizationId: orgId, organizationName: orgName.trim(),
         invitedBy: 'Host Admin', status: 'pending', emailSent: false,

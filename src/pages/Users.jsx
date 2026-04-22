@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { collection, doc, onSnapshot, getDoc, updateDoc, setDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase';
+import { useAuth } from '../contexts/AuthContext';
 
 function RoleBadge({ isAdmin }) {
   return (
@@ -33,17 +34,21 @@ const selectStyle = {
 };
 
 export default function Users() {
+  const { hostUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [orgDetails, setOrgDetails] = useState({});
   const [orgs, setOrgs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [orgFilter, setOrgFilter] = useState('ALL');
   const [roleFilter, setRoleFilter] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState('ALL');
   const [search, setSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [editState, setEditState] = useState({ isAdmin: false, organizationId: '' });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [deactivating, setDeactivating] = useState(false);
+  const [deactivateError, setDeactivateError] = useState('');
   const [demoRequests, setDemoRequests] = useState([]);
 
   // Subscribe to users, orgs, and demoRequests
@@ -99,6 +104,8 @@ export default function Users() {
       if (orgFilter !== 'ALL' && u.organizationId !== orgFilter) return false;
       if (roleFilter === 'admin' && !u.isAdmin) return false;
       if (roleFilter === 'user' && u.isAdmin) return false;
+      if (statusFilter === 'active' && u.deactivated) return false;
+      if (statusFilter === 'deactivated' && !u.deactivated) return false;
       if (search) {
         const q = search.toLowerCase();
         return `${u.name} ${u.email} ${u.organizationName || ''}`.toLowerCase().includes(q);
@@ -115,6 +122,35 @@ export default function Users() {
     setSelectedUser(user);
     setEditState({ name: user.name || '', isAdmin: user.isAdmin || false, organizationId: user.organizationId || '' });
     setSaved(false);
+    setDeactivateError('');
+  };
+
+  const handleToggleActive = async () => {
+    if (!selectedUser || !hostUser) return;
+    const makeActive = !!selectedUser.deactivated; // if currently deactivated, button reactivates
+    const confirmMsg = makeActive
+      ? `Reactivate ${selectedUser.email}? They will be able to sign in again.`
+      : `Deactivate ${selectedUser.email}? They will be signed out and unable to log in until reactivated.`;
+    if (!window.confirm(confirmMsg)) return;
+
+    setDeactivating(true);
+    setDeactivateError('');
+    try {
+      const idToken = await hostUser.getIdToken();
+      const res = await fetch('/.netlify/functions/set-user-active', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+        body: JSON.stringify({ userId: selectedUser.id, active: makeActive }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || 'Request failed');
+      // Local optimistic update — the root users onSnapshot will overwrite shortly
+      setSelectedUser(prev => prev && { ...prev, deactivated: !makeActive });
+    } catch (err) {
+      setDeactivateError(err.message);
+    } finally {
+      setDeactivating(false);
+    }
   };
 
   // FIX: properly update org-level records when role or org changes
@@ -187,6 +223,11 @@ export default function Users() {
             <option value="admin">Admin</option>
             <option value="user">User</option>
           </select>
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ padding: '8px 14px', background: '#162B44', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Outfit', sans-serif", cursor: 'pointer' }}>
+            <option value="ALL">All Status</option>
+            <option value="active">Active</option>
+            <option value="deactivated">Deactivated</option>
+          </select>
         </div>
 
         <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', overflow: 'hidden' }}>
@@ -205,9 +246,14 @@ export default function Users() {
           ) : filtered.map(user => {
             const t = formatTime(user.lastLogin);
             return (
-              <div key={user.id} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1.2fr 1fr 1fr 70px', padding: '12px 16px', borderBottom: '1px solid #0B1520', alignItems: 'center', background: selectedUser?.id === user.id ? 'rgba(200,162,88,0.06)' : 'transparent', borderLeft: selectedUser?.id === user.id ? '2px solid #C8A258' : '2px solid transparent' }}>
+              <div key={user.id} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1.2fr 1fr 1fr 70px', padding: '12px 16px', borderBottom: '1px solid #0B1520', alignItems: 'center', background: selectedUser?.id === user.id ? 'rgba(200,162,88,0.06)' : 'transparent', borderLeft: selectedUser?.id === user.id ? '2px solid #C8A258' : '2px solid transparent', opacity: user.deactivated ? 0.55 : 1 }}>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#f8fafc' }}>{user.name}</div>
+                  <div style={{ fontSize: '13px', fontWeight: '600', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</span>
+                    {user.deactivated && (
+                      <span style={{ fontSize: '10px', fontWeight: '600', padding: '2px 7px', borderRadius: '100px', background: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Deactivated</span>
+                    )}
+                  </div>
                   <div style={{ fontSize: '12px', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</div>
                 </div>
                 <div style={{ fontSize: '13px', color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.organizationName || user.organizationId || '—'}</div>
@@ -253,6 +299,15 @@ export default function Users() {
               })()}
             </div>
 
+            {selectedUser.deactivated && (
+              <div style={{ marginBottom: '16px', padding: '10px 12px', background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', borderRadius: '8px' }}>
+                <div style={{ fontSize: '12px', fontWeight: '600', color: '#f87171', marginBottom: '2px' }}>Account deactivated</div>
+                <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: 1.5 }}>
+                  This user cannot sign in. Use Reactivate below to restore access.
+                </div>
+              </div>
+            )}
+
             <div style={{ marginBottom: '14px' }}>
               <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#64748b', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Name</label>
               <input value={editState.name} onChange={e => setEditState(s => ({ ...s, name: e.target.value }))} placeholder="First Last" style={{ width: '100%', padding: '8px 12px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Outfit', sans-serif", boxSizing: 'border-box' }} />
@@ -286,6 +341,46 @@ export default function Users() {
                 Role updated in both root and org-level records
               </div>
             )}
+
+            <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #1E3557' }}>
+              <button
+                onClick={handleToggleActive}
+                disabled={deactivating}
+                style={{
+                  width: '100%',
+                  padding: '9px',
+                  background: 'transparent',
+                  border: `1px solid ${selectedUser.deactivated ? 'rgba(16,185,129,0.5)' : 'rgba(239,68,68,0.5)'}`,
+                  borderRadius: '8px',
+                  color: selectedUser.deactivated ? '#10b981' : '#f87171',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: deactivating ? 'not-allowed' : 'pointer',
+                  opacity: deactivating ? 0.6 : 1,
+                  fontFamily: "'Outfit', sans-serif",
+                  transition: 'background 0.15s',
+                }}
+                onMouseEnter={e => {
+                  if (deactivating) return;
+                  e.target.style.background = selectedUser.deactivated ? 'rgba(16,185,129,0.08)' : 'rgba(239,68,68,0.08)';
+                }}
+                onMouseLeave={e => { e.target.style.background = 'transparent'; }}
+              >
+                {deactivating
+                  ? (selectedUser.deactivated ? 'Reactivating...' : 'Deactivating...')
+                  : (selectedUser.deactivated ? 'Reactivate User' : 'Deactivate User')}
+              </button>
+              {deactivateError && (
+                <div style={{ marginTop: '8px', fontSize: '11px', color: '#f87171', textAlign: 'center' }}>
+                  {deactivateError}
+                </div>
+              )}
+              {!selectedUser.deactivated && !deactivateError && (
+                <div style={{ marginTop: '8px', fontSize: '11px', color: '#475569', textAlign: 'center', lineHeight: 1.5 }}>
+                  Deactivation blocks sign-in and ejects existing sessions. Data is preserved.
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

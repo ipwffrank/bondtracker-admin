@@ -22,7 +22,7 @@ function FieldRow({ label, children }) {
   );
 }
 
-const inputStyle = { width: '100%', padding: '8px 12px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Outfit', sans-serif", boxSizing: 'border-box' };
+const inputStyle = { width: '100%', padding: '8px 12px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Manrope', sans-serif", boxSizing: 'border-box' };
 
 export default function DemoLeads() {
   const [leads, setLeads] = useState([]);
@@ -148,7 +148,7 @@ export default function DemoLeads() {
     <div style={{ display: 'flex', height: 'calc(100vh - 64px)', gap: '20px', minWidth: 0 }}>
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
         <div style={{ marginBottom: '20px' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Sora', sans-serif" }}>Demo Leads</h1>
+          <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Manrope', sans-serif" }}>Demo Leads</h1>
           <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0' }}>{leads.length} total requests · Click a row to manage</p>
         </div>
 
@@ -162,8 +162,8 @@ export default function DemoLeads() {
         </div>
 
         <div style={{ display: 'flex', gap: '10px', marginBottom: '14px' }}>
-          <input placeholder="Search name, email, company..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, padding: '8px 14px', background: '#162B44', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Outfit', sans-serif" }} />
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ padding: '8px 14px', background: '#162B44', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Outfit', sans-serif", cursor: 'pointer' }}>
+          <input placeholder="Search name, email, company..." value={search} onChange={e => setSearch(e.target.value)} style={{ flex: 1, padding: '8px 14px', background: '#162B44', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Manrope', sans-serif" }} />
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ padding: '8px 14px', background: '#162B44', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Manrope', sans-serif", cursor: 'pointer' }}>
             <option value="ALL">All Statuses</option>
             {STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
@@ -231,7 +231,7 @@ export default function DemoLeads() {
             <FieldRow label="Internal Notes">
               <textarea value={editForm.notes} onChange={e => setEditForm(f => ({ ...f, notes: e.target.value }))} rows={4} placeholder="Add notes for the sales team..." style={{ ...inputStyle, resize: 'vertical' }} />
             </FieldRow>
-            <button onClick={handleSave} disabled={saving} style={{ width: '100%', padding: '9px', background: saved ? '#B8913A' : '#C8A258', border: 'none', borderRadius: '8px', color: '#0F2137', fontSize: '13px', fontWeight: '700', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, fontFamily: "'Outfit', sans-serif" }}>
+            <button onClick={handleSave} disabled={saving} style={{ width: '100%', padding: '9px', background: saved ? '#B8913A' : '#C8A258', border: 'none', borderRadius: '8px', color: '#0F2137', fontSize: '13px', fontWeight: '700', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, fontFamily: "'Manrope', sans-serif" }}>
               {saving ? 'Saving...' : saved ? 'Saved' : 'Save Changes'}
             </button>
 
@@ -246,7 +246,7 @@ export default function DemoLeads() {
                 <option value="user">User</option>
               </select>
             </FieldRow>
-            <button onClick={handleCreateOrg} disabled={creatingOrg || !orgName.trim()} style={{ width: '100%', padding: '9px', background: creatingOrg || !orgName.trim() ? 'transparent' : 'rgba(200,162,88,0.1)', border: `1px solid ${creatingOrg || !orgName.trim() ? '#1E3557' : 'rgba(200,162,88,0.4)'}`, borderRadius: '8px', color: creatingOrg || !orgName.trim() ? '#475569' : '#C8A258', fontSize: '13px', fontWeight: '600', cursor: creatingOrg || !orgName.trim() ? 'not-allowed' : 'pointer', fontFamily: "'Outfit', sans-serif" }}>
+            <button onClick={handleCreateOrg} disabled={creatingOrg || !orgName.trim()} style={{ width: '100%', padding: '9px', background: creatingOrg || !orgName.trim() ? 'transparent' : 'rgba(200,162,88,0.1)', border: `1px solid ${creatingOrg || !orgName.trim() ? '#1E3557' : 'rgba(200,162,88,0.4)'}`, borderRadius: '8px', color: creatingOrg || !orgName.trim() ? '#475569' : '#C8A258', fontSize: '13px', fontWeight: '600', cursor: creatingOrg || !orgName.trim() ? 'not-allowed' : 'pointer', fontFamily: "'Manrope', sans-serif" }}>
               {creatingOrg ? 'Creating...' : 'Create Org & Generate Invite Link'}
             </button>
 
@@ -256,7 +256,7 @@ export default function DemoLeads() {
                 {emailError && <div style={{ fontSize: '11px', color: '#f59e0b', marginBottom: '8px', background: 'rgba(245,158,11,0.1)', padding: '5px 8px', borderRadius: '5px' }}>{emailError}</div>}
                 <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', marginBottom: '5px' }}>Invite link</div>
                 <div style={{ fontSize: '11px', color: '#64748b', wordBreak: 'break-all', marginBottom: '8px', lineHeight: '1.5' }}>{inviteLink}</div>
-                <button onClick={copyLink} style={{ padding: '5px 12px', background: copied ? 'rgba(200,162,88,0.2)' : 'rgba(200,162,88,0.1)', border: '1px solid rgba(200,162,88,0.35)', borderRadius: '6px', color: '#C8A258', fontSize: '12px', cursor: 'pointer', fontFamily: "'Outfit', sans-serif", fontWeight: '600' }}>
+                <button onClick={copyLink} style={{ padding: '5px 12px', background: copied ? 'rgba(200,162,88,0.2)' : 'rgba(200,162,88,0.1)', border: '1px solid rgba(200,162,88,0.35)', borderRadius: '6px', color: '#C8A258', fontSize: '12px', cursor: 'pointer', fontFamily: "'Manrope', sans-serif", fontWeight: '600' }}>
                   {copied ? 'Copied!' : 'Copy Link'}
                 </button>
               </div>

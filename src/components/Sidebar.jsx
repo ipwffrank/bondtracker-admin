@@ -22,7 +22,7 @@ const activeStyle = (isActive) => ({
   background: isActive ? 'rgba(200,162,88,0.1)' : 'transparent',
   fontSize: '14px', fontWeight: isActive ? '600' : '500', transition: 'all 0.15s',
   border: isActive ? '1px solid rgba(200,162,88,0.2)' : '1px solid transparent',
-  fontFamily: "'Outfit', sans-serif",
+  fontFamily: "'Manrope', sans-serif",
 });
 
 function NavIcon({ d, d2 }) {
@@ -67,7 +67,7 @@ export default function Sidebar({ collapsed, onToggle }) {
           </div>
         )}
         {!collapsed && (
-          <div style={{ display: 'inline-block', marginTop: '8px', fontSize: '10px', fontWeight: '700', color: '#C8A258', letterSpacing: '0.12em', textTransform: 'uppercase', background: 'rgba(200,162,88,0.1)', border: '1px solid rgba(200,162,88,0.2)', borderRadius: '4px', padding: '2px 7px', fontFamily: "'Outfit', sans-serif" }}>Host Admin</div>
+          <div style={{ display: 'inline-block', marginTop: '8px', fontSize: '10px', fontWeight: '700', color: '#C8A258', letterSpacing: '0.12em', textTransform: 'uppercase', background: 'rgba(200,162,88,0.1)', border: '1px solid rgba(200,162,88,0.2)', borderRadius: '4px', padding: '2px 7px', fontFamily: "'Manrope', sans-serif" }}>Host Admin</div>
         )}
       </div>
 
@@ -128,7 +128,7 @@ export default function Sidebar({ collapsed, onToggle }) {
       {/* Footer */}
       <div style={{ padding: collapsed ? '14px 8px' : '14px 16px', borderTop: '1px solid #132940' }}>
         {!collapsed && (
-          <div style={{ fontSize: '11px', color: '#475569', marginBottom: '10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: "'Outfit', sans-serif" }}>{hostUser?.email}</div>
+          <div style={{ fontSize: '11px', color: '#475569', marginBottom: '10px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: "'Manrope', sans-serif" }}>{hostUser?.email}</div>
         )}
         <button
           onClick={handleLogout}
@@ -137,7 +137,7 @@ export default function Sidebar({ collapsed, onToggle }) {
             width: '100%', padding: collapsed ? '7px 0' : '7px 12px',
             background: 'transparent', border: '1px solid #1E3557', borderRadius: '6px',
             color: '#64748b', fontSize: '12px', cursor: 'pointer', textAlign: 'center',
-            fontFamily: "'Outfit', sans-serif", transition: 'all 0.15s',
+            fontFamily: "'Manrope', sans-serif", transition: 'all 0.15s',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
           }}
           onMouseEnter={e => { e.currentTarget.style.borderColor = '#ef4444'; e.currentTarget.style.color = '#ef4444'; }}

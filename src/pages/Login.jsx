@@ -29,17 +29,17 @@ export default function Login() {
     }
   };
 
-  const inputStyle = { width: '100%', padding: '10px 14px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '14px', fontFamily: "'Outfit', sans-serif", boxSizing: 'border-box', transition: 'border-color 0.2s' };
+  const inputStyle = { width: '100%', padding: '10px 14px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '14px', fontFamily: "'Manrope', sans-serif", boxSizing: 'border-box', transition: 'border-color 0.2s' };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0F2137', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Outfit', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: '#0F2137', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Manrope', sans-serif" }}>
       <div style={{ background: '#162B44', borderRadius: '16px', border: '1px solid #1E3557', padding: '40px', width: '100%', maxWidth: '400px', boxShadow: '0 25px 60px rgba(0,0,0,0.5)' }}>
         <div style={{ marginBottom: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
             <Logo size="md" variant="dark" />
             <div style={{ fontSize: '10px', fontWeight: '700', color: '#C8A258', letterSpacing: '0.12em', textTransform: 'uppercase', background: 'rgba(200,162,88,0.1)', border: '1px solid rgba(200,162,88,0.2)', borderRadius: '4px', padding: '2px 7px' }}>Host Admin</div>
           </div>
-          <h1 style={{ fontSize: '22px', fontWeight: '700', color: '#f8fafc', margin: '0 0 6px', fontFamily: "'Sora', sans-serif" }}>Sign in</h1>
+          <h1 style={{ fontSize: '22px', fontWeight: '700', color: '#f8fafc', margin: '0 0 6px', fontFamily: "'Manrope', sans-serif" }}>Sign in</h1>
           <p style={{ fontSize: '13px', color: '#64748b', margin: 0 }}>Restricted access — authorized personnel only</p>
         </div>
         <form onSubmit={handleSubmit}>
@@ -54,7 +54,7 @@ export default function Login() {
               onFocus={e => e.target.style.borderColor = '#C8A258'} onBlur={e => e.target.style.borderColor = '#1E3557'} />
           </div>
           {error && <div style={{ marginBottom: '16px', padding: '10px 14px', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#ef4444', fontSize: '13px' }}>{error}</div>}
-          <button type="submit" disabled={loading} style={{ width: '100%', padding: '12px', background: '#C8A258', border: 'none', borderRadius: '8px', color: '#0F2137', fontSize: '14px', fontWeight: '700', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, fontFamily: "'Outfit', sans-serif" }}>
+          <button type="submit" disabled={loading} style={{ width: '100%', padding: '12px', background: '#C8A258', border: 'none', borderRadius: '8px', color: '#0F2137', fontSize: '14px', fontWeight: '700', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.7 : 1, fontFamily: "'Manrope', sans-serif" }}>
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>

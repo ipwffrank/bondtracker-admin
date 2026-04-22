@@ -57,14 +57,14 @@ export default function PasswordReset() {
 
   const inputStyle = {
     width: '100%', padding: '11px 14px', background: '#0B1520', border: '1px solid #1E3557',
-    borderRadius: '10px', color: '#f8fafc', fontSize: '15px', fontFamily: "'Outfit', sans-serif",
+    borderRadius: '10px', color: '#f8fafc', fontSize: '15px', fontFamily: "'Manrope', sans-serif",
     outline: 'none', transition: 'border-color 0.2s',
   };
 
   return (
     <div>
       <div style={{ marginBottom: '28px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Sora', sans-serif" }}>
+        <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Manrope', sans-serif" }}>
           Password Reset
         </h1>
         <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0' }}>Send password reset emails to users</p>
@@ -73,7 +73,7 @@ export default function PasswordReset() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
         {/* Reset Form */}
         <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', padding: '28px' }}>
-          <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#f8fafc', margin: '0 0 20px', fontFamily: "'Sora', sans-serif" }}>Send Reset Link</h2>
+          <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#f8fafc', margin: '0 0 20px', fontFamily: "'Manrope', sans-serif" }}>Send Reset Link</h2>
 
           {message && (
             <div style={{
@@ -81,14 +81,14 @@ export default function PasswordReset() {
               background: message.type === 'success' ? 'rgba(200,162,88,0.1)' : 'rgba(239,68,68,0.1)',
               border: `1px solid ${message.type === 'success' ? 'rgba(200,162,88,0.25)' : 'rgba(239,68,68,0.25)'}`,
               color: message.type === 'success' ? '#C8A258' : '#fca5a5',
-              fontFamily: "'Outfit', sans-serif",
+              fontFamily: "'Manrope', sans-serif",
             }}>
               {message.text}
             </div>
           )}
 
           <form onSubmit={handleReset}>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#94a3b8', marginBottom: '7px', fontFamily: "'Outfit', sans-serif" }}>User Email</label>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#94a3b8', marginBottom: '7px', fontFamily: "'Manrope', sans-serif" }}>User Email</label>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
               <input
                 type="email" value={email} onChange={e => { setEmail(e.target.value); setUserInfo(null); }}
@@ -99,21 +99,21 @@ export default function PasswordReset() {
             </div>
 
             {/* User info lookup */}
-            {lookingUp && <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '12px', fontFamily: "'Outfit', sans-serif" }}>Looking up user...</div>}
+            {lookingUp && <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '12px', fontFamily: "'Manrope', sans-serif" }}>Looking up user...</div>}
             {userInfo && !userInfo.notFound && (
-              <div style={{ background: '#0B1520', borderRadius: '8px', padding: '12px 14px', marginBottom: '16px', fontSize: '13px', fontFamily: "'Outfit', sans-serif" }}>
+              <div style={{ background: '#0B1520', borderRadius: '8px', padding: '12px 14px', marginBottom: '16px', fontSize: '13px', fontFamily: "'Manrope', sans-serif" }}>
                 <div style={{ color: '#f8fafc', fontWeight: 500 }}>{userInfo.name}</div>
                 <div style={{ color: '#64748b', fontSize: '12px' }}>Org: {userInfo.org} &middot; Role: {userInfo.role}</div>
               </div>
             )}
             {userInfo?.notFound && (
-              <div style={{ fontSize: '12px', color: '#f59e0b', marginBottom: '12px', fontFamily: "'Outfit', sans-serif" }}>User not found in database</div>
+              <div style={{ fontSize: '12px', color: '#f59e0b', marginBottom: '12px', fontFamily: "'Manrope', sans-serif" }}>User not found in database</div>
             )}
 
             <button type="submit" disabled={loading} style={{
               width: '100%', padding: '13px', background: '#C8A258', color: '#0F2137',
               border: 'none', borderRadius: '10px', fontSize: '15px', fontWeight: 600,
-              fontFamily: "'Outfit', sans-serif", cursor: 'pointer',
+              fontFamily: "'Manrope', sans-serif", cursor: 'pointer',
               opacity: loading ? 0.6 : 1, transition: 'all 0.2s',
             }}>
               {loading ? 'Sending...' : 'Send Password Reset'}
@@ -123,13 +123,13 @@ export default function PasswordReset() {
 
         {/* Recent Resets */}
         <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', padding: '28px' }}>
-          <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#f8fafc', margin: '0 0 20px', fontFamily: "'Sora', sans-serif" }}>Recent Resets (This Session)</h2>
+          <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#f8fafc', margin: '0 0 20px', fontFamily: "'Manrope', sans-serif" }}>Recent Resets (This Session)</h2>
           {recentResets.length === 0 ? (
-            <div style={{ color: '#64748b', fontSize: '13px', fontFamily: "'Outfit', sans-serif" }}>No resets sent this session.</div>
+            <div style={{ color: '#64748b', fontSize: '13px', fontFamily: "'Manrope', sans-serif" }}>No resets sent this session.</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {recentResets.map((r, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#0B1520', borderRadius: '8px', fontSize: '13px', fontFamily: "'Outfit', sans-serif" }}>
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', background: '#0B1520', borderRadius: '8px', fontSize: '13px', fontFamily: "'Manrope', sans-serif" }}>
                   <span style={{ color: '#f8fafc' }}>{r.email}</span>
                   <span style={{ color: '#64748b', fontSize: '11px' }}>{r.time.toLocaleTimeString()}</span>
                 </div>

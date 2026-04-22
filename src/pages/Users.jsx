@@ -29,7 +29,7 @@ function formatTime(ts) {
 
 const selectStyle = {
   width: '100%', padding: '8px 12px', background: '#0B1520', border: '1px solid #1E3557',
-  borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Outfit', sans-serif",
+  borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Manrope', sans-serif",
   cursor: 'pointer', boxSizing: 'border-box',
 };
 
@@ -203,7 +203,7 @@ export default function Users() {
       {/* User list */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ marginBottom: '20px' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Sora', sans-serif" }}>Users</h1>
+          <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Manrope', sans-serif" }}>Users</h1>
           <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0' }}>{users.length} total users across {orgs.length} organizations</p>
         </div>
 
@@ -212,18 +212,18 @@ export default function Users() {
             placeholder="Search name, email..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ flex: 1, padding: '8px 14px', background: '#162B44', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Outfit', sans-serif" }}
+            style={{ flex: 1, padding: '8px 14px', background: '#162B44', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Manrope', sans-serif" }}
           />
-          <select value={orgFilter} onChange={e => setOrgFilter(e.target.value)} style={{ padding: '8px 14px', background: '#162B44', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Outfit', sans-serif", cursor: 'pointer', minWidth: '160px' }}>
+          <select value={orgFilter} onChange={e => setOrgFilter(e.target.value)} style={{ padding: '8px 14px', background: '#162B44', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Manrope', sans-serif", cursor: 'pointer', minWidth: '160px' }}>
             <option value="ALL">All Organizations</option>
             {orgs.map(o => <option key={o.id} value={o.id}>{o.name || o.id}</option>)}
           </select>
-          <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} style={{ padding: '8px 14px', background: '#162B44', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Outfit', sans-serif", cursor: 'pointer' }}>
+          <select value={roleFilter} onChange={e => setRoleFilter(e.target.value)} style={{ padding: '8px 14px', background: '#162B44', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Manrope', sans-serif", cursor: 'pointer' }}>
             <option value="ALL">All Roles</option>
             <option value="admin">Admin</option>
             <option value="user">User</option>
           </select>
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ padding: '8px 14px', background: '#162B44', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Outfit', sans-serif", cursor: 'pointer' }}>
+          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ padding: '8px 14px', background: '#162B44', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Manrope', sans-serif", cursor: 'pointer' }}>
             <option value="ALL">All Status</option>
             <option value="active">Active</option>
             <option value="deactivated">Deactivated</option>
@@ -266,7 +266,7 @@ export default function Users() {
                 <div style={{ textAlign: 'right' }}>
                   <button
                     onClick={() => openEdit(user)}
-                    style={{ padding: '5px 12px', background: 'transparent', border: '1px solid #1E3557', borderRadius: '6px', color: '#94a3b8', fontSize: '12px', cursor: 'pointer', fontFamily: "'Outfit', sans-serif" }}
+                    style={{ padding: '5px 12px', background: 'transparent', border: '1px solid #1E3557', borderRadius: '6px', color: '#94a3b8', fontSize: '12px', cursor: 'pointer', fontFamily: "'Manrope', sans-serif" }}
                     onMouseEnter={e => { e.target.style.borderColor = '#C8A258'; e.target.style.color = '#C8A258'; }}
                     onMouseLeave={e => { e.target.style.borderColor = '#1E3557'; e.target.style.color = '#94a3b8'; }}
                   >
@@ -310,7 +310,7 @@ export default function Users() {
 
             <div style={{ marginBottom: '14px' }}>
               <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', color: '#64748b', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Name</label>
-              <input value={editState.name} onChange={e => setEditState(s => ({ ...s, name: e.target.value }))} placeholder="First Last" style={{ width: '100%', padding: '8px 12px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Outfit', sans-serif", boxSizing: 'border-box' }} />
+              <input value={editState.name} onChange={e => setEditState(s => ({ ...s, name: e.target.value }))} placeholder="First Last" style={{ width: '100%', padding: '8px 12px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Manrope', sans-serif", boxSizing: 'border-box' }} />
             </div>
 
             <div style={{ marginBottom: '14px' }}>
@@ -332,7 +332,7 @@ export default function Users() {
             <button
               onClick={handleSave}
               disabled={saving}
-              style={{ width: '100%', padding: '9px', background: saved ? '#B8913A' : '#C8A258', border: 'none', borderRadius: '8px', color: '#0F2137', fontSize: '13px', fontWeight: '700', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, fontFamily: "'Outfit', sans-serif", transition: 'background 0.2s' }}
+              style={{ width: '100%', padding: '9px', background: saved ? '#B8913A' : '#C8A258', border: 'none', borderRadius: '8px', color: '#0F2137', fontSize: '13px', fontWeight: '700', cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1, fontFamily: "'Manrope', sans-serif", transition: 'background 0.2s' }}
             >
               {saving ? 'Saving...' : saved ? 'Saved' : 'Save Changes'}
             </button>
@@ -357,7 +357,7 @@ export default function Users() {
                   fontWeight: '600',
                   cursor: deactivating ? 'not-allowed' : 'pointer',
                   opacity: deactivating ? 0.6 : 1,
-                  fontFamily: "'Outfit', sans-serif",
+                  fontFamily: "'Manrope', sans-serif",
                   transition: 'background 0.15s',
                 }}
                 onMouseEnter={e => {

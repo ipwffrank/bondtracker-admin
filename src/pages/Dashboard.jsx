@@ -73,7 +73,7 @@ export default function Dashboard() {
   return (
     <div>
       <div style={{ marginBottom: '28px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Sora', sans-serif" }}>Dashboard</h1>
+        <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Manrope', sans-serif" }}>Dashboard</h1>
         <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0' }}>Platform overview</p>
       </div>
 

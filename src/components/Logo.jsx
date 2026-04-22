@@ -33,7 +33,7 @@ export default function Logo({ variant = 'dark', size = 'md', animated = true, i
           <circle cx="22" cy="22" r="4" fill="currentColor" />
           <circle cx="22" cy="22" r="1.8" fill={bg} />
         </svg>
-        {!iconOnly && <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: `${s.wordmark}px`, fontWeight: 700, color: text, letterSpacing: '4px' }}>AXLE</span>}
+        {!iconOnly && <span style={{ fontFamily: "'Manrope', sans-serif", fontSize: `${s.wordmark}px`, fontWeight: 700, color: text, letterSpacing: '4px' }}>AXLE</span>}
       </div>
     </>
   );

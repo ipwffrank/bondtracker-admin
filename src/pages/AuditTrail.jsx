@@ -88,14 +88,14 @@ export default function AuditTrail() {
 
   const selectStyle = {
     padding: '7px 12px', background: '#0B1520', border: '1px solid #1E3557',
-    borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Outfit', sans-serif",
+    borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Manrope', sans-serif",
     outline: 'none', cursor: 'pointer',
   };
 
   return (
     <div>
       <div style={{ marginBottom: '28px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Sora', sans-serif" }}>
+        <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Manrope', sans-serif" }}>
           Audit Trail
         </h1>
         <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0' }}>Track all data export actions across organizations</p>
@@ -109,8 +109,8 @@ export default function AuditTrail() {
           { label: 'TODAY', value: logs.filter(l => { const d = l.timestamp?.toDate?.(); return d && (new Date() - d) < 86400000; }).length },
         ].map(s => (
           <div key={s.label} style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', padding: '20px' }}>
-            <div style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0.08em', marginBottom: '8px', fontFamily: "'Outfit', sans-serif" }}>{s.label}</div>
-            <div style={{ fontSize: '28px', fontWeight: 700, color: '#f8fafc', fontFamily: "'Sora', sans-serif" }}>{s.value}</div>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0.08em', marginBottom: '8px', fontFamily: "'Manrope', sans-serif" }}>{s.label}</div>
+            <div style={{ fontSize: '28px', fontWeight: 700, color: '#f8fafc', fontFamily: "'Manrope', sans-serif" }}>{s.value}</div>
           </div>
         ))}
       </div>
@@ -135,15 +135,15 @@ export default function AuditTrail() {
       {/* Table */}
       <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', overflow: 'hidden' }}>
         {loading ? (
-          <div style={{ padding: '60px', textAlign: 'center', color: '#64748b', fontFamily: "'Outfit', sans-serif" }}>Loading audit logs...</div>
+          <div style={{ padding: '60px', textAlign: 'center', color: '#64748b', fontFamily: "'Manrope', sans-serif" }}>Loading audit logs...</div>
         ) : filtered.length === 0 ? (
-          <div style={{ padding: '60px', textAlign: 'center', color: '#64748b', fontFamily: "'Outfit', sans-serif" }}>
+          <div style={{ padding: '60px', textAlign: 'center', color: '#64748b', fontFamily: "'Manrope', sans-serif" }}>
             {logs.length === 0 ? 'No audit logs yet. Export actions will appear here automatically.' : 'No logs match your filters.'}
           </div>
         ) : (
           <>
             {/* Header */}
-            <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr 1fr 1fr 1.5fr', padding: '12px 20px', borderBottom: '1px solid #1E3557', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0.05em', fontFamily: "'Outfit', sans-serif" }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '140px 1fr 1fr 1fr 1.5fr', padding: '12px 20px', borderBottom: '1px solid #1E3557', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0.05em', fontFamily: "'Manrope', sans-serif" }}>
               <div>TIME</div>
               <div>ORGANIZATION</div>
               <div>USER</div>
@@ -153,7 +153,7 @@ export default function AuditTrail() {
 
             {/* Rows */}
             {filtered.slice(0, 200).map(log => (
-              <div key={log.id} style={{ display: 'grid', gridTemplateColumns: '140px 1fr 1fr 1fr 1.5fr', padding: '12px 20px', borderBottom: '1px solid #0B1520', fontSize: '13px', fontFamily: "'Outfit', sans-serif", transition: 'background 0.1s' }}
+              <div key={log.id} style={{ display: 'grid', gridTemplateColumns: '140px 1fr 1fr 1fr 1.5fr', padding: '12px 20px', borderBottom: '1px solid #0B1520', fontSize: '13px', fontFamily: "'Manrope', sans-serif", transition: 'background 0.1s' }}
                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >

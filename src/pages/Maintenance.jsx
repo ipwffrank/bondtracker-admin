@@ -190,7 +190,7 @@ export default function Maintenance() {
     <div>
       <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Sora', sans-serif" }}>Maintenance</h1>
+          <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Manrope', sans-serif" }}>Maintenance</h1>
           <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0' }}>Schedule maintenance windows and notify all users automatically</p>
         </div>
         <button
@@ -199,7 +199,7 @@ export default function Maintenance() {
             padding: '10px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer',
             background: showForm ? '#1E3557' : 'linear-gradient(135deg, #C8A258, #b8924a)',
             color: showForm ? '#94a3b8' : '#0F2137', fontSize: '13px', fontWeight: '700',
-            fontFamily: "'Outfit', sans-serif", letterSpacing: '0.02em',
+            fontFamily: "'Manrope', sans-serif", letterSpacing: '0.02em',
           }}
         >
           {showForm ? 'Cancel' : '+ Schedule Maintenance'}
@@ -209,7 +209,7 @@ export default function Maintenance() {
       {/* SLA reminder */}
       <div style={{ marginBottom: '20px', padding: '12px 16px', background: 'rgba(200,162,88,0.08)', border: '1px solid rgba(200,162,88,0.2)', borderRadius: '8px', display: 'flex', gap: '10px', alignItems: 'center' }}>
         <span style={{ fontSize: '14px' }}>SLA</span>
-        <div style={{ fontSize: '12px', color: '#94a3b8', fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ fontSize: '12px', color: '#94a3b8', fontFamily: "'Manrope', sans-serif" }}>
           <span style={{ color: '#C8A258', fontWeight: 600 }}>48-hour minimum notice</span> · Allowed windows: <span style={{ color: '#f8fafc' }}>weekends</span> or <span style={{ color: '#f8fafc' }}>22:00-06:00 SGT/HKT</span>
         </div>
       </div>
@@ -217,7 +217,7 @@ export default function Maintenance() {
       {/* Schedule Form */}
       {showForm && (
         <div style={{ marginBottom: '24px', padding: '24px', background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px' }}>
-          <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#f8fafc', margin: '0 0 16px', fontFamily: "'Sora', sans-serif" }}>Schedule New Maintenance</h3>
+          <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#f8fafc', margin: '0 0 16px', fontFamily: "'Manrope', sans-serif" }}>Schedule New Maintenance</h3>
           <form onSubmit={handleSubmit}>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
               <div>
@@ -225,14 +225,14 @@ export default function Maintenance() {
                 <input
                   type="text" placeholder="e.g., Database migration"
                   value={form.title} onChange={e => setForm({ ...form, title: e.target.value })}
-                  style={{ width: '100%', padding: '10px 14px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Outfit', sans-serif" }}
+                  style={{ width: '100%', padding: '10px 14px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Manrope', sans-serif" }}
                 />
               </div>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Affected Services</label>
                 <select
                   value={form.affectedServices} onChange={e => setForm({ ...form, affectedServices: e.target.value })}
-                  style={{ width: '100%', padding: '10px 14px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Outfit', sans-serif", cursor: 'pointer' }}
+                  style={{ width: '100%', padding: '10px 14px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Manrope', sans-serif", cursor: 'pointer' }}
                 >
                   <option value="All Services">All Services</option>
                   <option value="Pipeline & Analytics">Pipeline & Analytics</option>
@@ -248,7 +248,7 @@ export default function Maintenance() {
                 placeholder="Describe the maintenance work and expected impact..."
                 value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
                 rows={3}
-                style={{ width: '100%', padding: '10px 14px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Outfit', sans-serif", resize: 'vertical' }}
+                style={{ width: '100%', padding: '10px 14px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Manrope', sans-serif", resize: 'vertical' }}
               />
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
@@ -256,14 +256,14 @@ export default function Maintenance() {
                 <label style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>Start Time (SGT/HKT) *</label>
                 <input
                   type="datetime-local" value={form.startTime} onChange={e => setForm({ ...form, startTime: e.target.value })}
-                  style={{ width: '100%', padding: '10px 14px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Outfit', sans-serif" }}
+                  style={{ width: '100%', padding: '10px 14px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Manrope', sans-serif" }}
                 />
               </div>
               <div>
                 <label style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8', display: 'block', marginBottom: '6px' }}>End Time (SGT/HKT) *</label>
                 <input
                   type="datetime-local" value={form.endTime} onChange={e => setForm({ ...form, endTime: e.target.value })}
-                  style={{ width: '100%', padding: '10px 14px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Outfit', sans-serif" }}
+                  style={{ width: '100%', padding: '10px 14px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Manrope', sans-serif" }}
                 />
               </div>
             </div>
@@ -282,7 +282,7 @@ export default function Maintenance() {
               style={{
                 padding: '10px 24px', borderRadius: '8px', border: 'none', cursor: sending ? 'not-allowed' : 'pointer',
                 background: 'linear-gradient(135deg, #C8A258, #b8924a)', color: '#0F2137',
-                fontSize: '13px', fontWeight: '700', fontFamily: "'Outfit', sans-serif",
+                fontSize: '13px', fontWeight: '700', fontFamily: "'Manrope', sans-serif",
                 opacity: sending ? 0.6 : 1,
               }}
             >
@@ -294,7 +294,7 @@ export default function Maintenance() {
 
       {/* Upcoming Maintenance */}
       <div style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#f8fafc', marginBottom: '12px', fontFamily: "'Sora', sans-serif" }}>
+        <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#f8fafc', marginBottom: '12px', fontFamily: "'Manrope', sans-serif" }}>
           Upcoming ({upcoming.length})
         </h2>
         {loading ? (
@@ -311,7 +311,7 @@ export default function Maintenance() {
                 <div key={mw.id} style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', padding: '20px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                     <div>
-                      <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#f8fafc', margin: '0 0 4px', fontFamily: "'Outfit', sans-serif" }}>{mw.title}</h3>
+                      <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#f8fafc', margin: '0 0 4px', fontFamily: "'Manrope', sans-serif" }}>{mw.title}</h3>
                       {mw.description && <p style={{ fontSize: '13px', color: '#94a3b8', margin: 0 }}>{mw.description}</p>}
                     </div>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
@@ -321,7 +321,7 @@ export default function Maintenance() {
                         style={{
                           padding: '5px 10px', background: '#0B1520', border: `1px solid ${statusInfo.color}40`,
                           borderRadius: '6px', color: statusInfo.color, fontSize: '11px', fontWeight: 700,
-                          fontFamily: "'Outfit', sans-serif", cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.03em',
+                          fontFamily: "'Manrope', sans-serif", cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '0.03em',
                         }}
                       >
                         {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
@@ -351,7 +351,7 @@ export default function Maintenance() {
       {/* Past Maintenance */}
       {past.length > 0 && (
         <div>
-          <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#f8fafc', marginBottom: '12px', fontFamily: "'Sora', sans-serif" }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 700, color: '#f8fafc', marginBottom: '12px', fontFamily: "'Manrope', sans-serif" }}>
             Past ({past.length})
           </h2>
           <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', overflow: 'hidden' }}>

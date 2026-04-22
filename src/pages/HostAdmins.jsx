@@ -81,14 +81,14 @@ export default function HostAdmins() {
 
   const inputStyle = {
     flex: 1, padding: '11px 14px', background: '#0B1520', border: '1px solid #1E3557',
-    borderRadius: '10px', color: '#f8fafc', fontSize: '14px', fontFamily: "'Outfit', sans-serif",
+    borderRadius: '10px', color: '#f8fafc', fontSize: '14px', fontFamily: "'Manrope', sans-serif",
     outline: 'none', transition: 'border-color 0.2s',
   };
 
   return (
     <div>
       <div style={{ marginBottom: '28px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Sora', sans-serif" }}>
+        <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Manrope', sans-serif" }}>
           Host Admins
         </h1>
         <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0' }}>Manage who can access this admin dashboard</p>
@@ -96,7 +96,7 @@ export default function HostAdmins() {
 
       {/* Add form */}
       <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', padding: '24px', marginBottom: '24px' }}>
-        <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#f8fafc', margin: '0 0 16px', fontFamily: "'Sora', sans-serif" }}>Add Host Admin</h2>
+        <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#f8fafc', margin: '0 0 16px', fontFamily: "'Manrope', sans-serif" }}>Add Host Admin</h2>
 
         {message && (
           <div style={{
@@ -104,7 +104,7 @@ export default function HostAdmins() {
             background: message.type === 'success' ? 'rgba(200,162,88,0.1)' : 'rgba(239,68,68,0.1)',
             border: `1px solid ${message.type === 'success' ? 'rgba(200,162,88,0.25)' : 'rgba(239,68,68,0.25)'}`,
             color: message.type === 'success' ? '#C8A258' : '#fca5a5',
-            fontFamily: "'Outfit', sans-serif",
+            fontFamily: "'Manrope', sans-serif",
           }}>
             {message.text}
           </div>
@@ -120,13 +120,13 @@ export default function HostAdmins() {
           <button type="submit" disabled={adding} style={{
             padding: '11px 24px', background: '#C8A258', color: '#0F2137',
             border: 'none', borderRadius: '10px', fontSize: '14px', fontWeight: 600,
-            fontFamily: "'Outfit', sans-serif", cursor: 'pointer', whiteSpace: 'nowrap',
+            fontFamily: "'Manrope', sans-serif", cursor: 'pointer', whiteSpace: 'nowrap',
             opacity: adding ? 0.6 : 1, transition: 'all 0.2s',
           }}>
             {adding ? 'Adding...' : 'Add Admin'}
           </button>
         </form>
-        <p style={{ color: '#475569', fontSize: '12px', margin: '10px 0 0', fontFamily: "'Outfit', sans-serif" }}>
+        <p style={{ color: '#475569', fontSize: '12px', margin: '10px 0 0', fontFamily: "'Manrope', sans-serif" }}>
           User must have an existing Firebase Auth account.
         </p>
       </div>
@@ -134,25 +134,25 @@ export default function HostAdmins() {
       {/* Admins list */}
       <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', overflow: 'hidden' }}>
         <div style={{ padding: '20px 24px 0' }}>
-          <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#f8fafc', margin: '0 0 16px', fontFamily: "'Sora', sans-serif" }}>
+          <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#f8fafc', margin: '0 0 16px', fontFamily: "'Manrope', sans-serif" }}>
             Current Host Admins ({admins.length})
           </h2>
         </div>
 
         {loading ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#64748b', fontFamily: "'Outfit', sans-serif" }}>Loading...</div>
+          <div style={{ padding: '40px', textAlign: 'center', color: '#64748b', fontFamily: "'Manrope', sans-serif" }}>Loading...</div>
         ) : admins.length === 0 ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#64748b', fontFamily: "'Outfit', sans-serif" }}>No host admins found.</div>
+          <div style={{ padding: '40px', textAlign: 'center', color: '#64748b', fontFamily: "'Manrope', sans-serif" }}>No host admins found.</div>
         ) : (
           <>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 100px', padding: '12px 24px', borderBottom: '1px solid #1E3557', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0.05em', fontFamily: "'Outfit', sans-serif" }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 100px', padding: '12px 24px', borderBottom: '1px solid #1E3557', fontSize: '11px', fontWeight: 600, color: '#64748b', letterSpacing: '0.05em', fontFamily: "'Manrope', sans-serif" }}>
               <div>EMAIL</div>
               <div>NAME</div>
               <div>UID</div>
               <div></div>
             </div>
             {admins.map(admin => (
-              <div key={admin.uid} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 100px', padding: '14px 24px', borderBottom: '1px solid #0B1520', fontSize: '13px', fontFamily: "'Outfit', sans-serif", alignItems: 'center', transition: 'background 0.1s' }}
+              <div key={admin.uid} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 100px', padding: '14px 24px', borderBottom: '1px solid #0B1520', fontSize: '13px', fontFamily: "'Manrope', sans-serif", alignItems: 'center', transition: 'background 0.1s' }}
                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
@@ -168,7 +168,7 @@ export default function HostAdmins() {
                       style={{
                         background: 'transparent', border: '1px solid #1E3557', borderRadius: '6px',
                         color: '#64748b', fontSize: '12px', padding: '4px 10px', cursor: 'pointer',
-                        fontFamily: "'Outfit', sans-serif", transition: 'all 0.15s',
+                        fontFamily: "'Manrope', sans-serif", transition: 'all 0.15s',
                       }}
                       onMouseEnter={e => { e.target.style.borderColor = '#ef4444'; e.target.style.color = '#ef4444'; }}
                       onMouseLeave={e => { e.target.style.borderColor = '#1E3557'; e.target.style.color = '#64748b'; }}

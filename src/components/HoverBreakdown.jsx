@@ -98,7 +98,7 @@ export default function HoverBreakdown({ children, title, headers, rows, csvFile
             maxHeight: '360px',
             display: 'flex',
             flexDirection: 'column',
-            fontFamily: "'Outfit', sans-serif",
+            fontFamily: "'Manrope', sans-serif",
           }}
         >
           {/* Header */}
@@ -124,7 +124,7 @@ export default function HoverBreakdown({ children, title, headers, rows, csvFile
                 fontSize: '11px',
                 fontWeight: '600',
                 cursor: 'pointer',
-                fontFamily: "'Outfit', sans-serif",
+                fontFamily: "'Manrope', sans-serif",
                 display: 'flex',
                 alignItems: 'center',
                 gap: '4px',

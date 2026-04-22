@@ -8,7 +8,7 @@ function BarMetric({ label, value, max, color, pct }) {
   return (
     <div style={{ marginBottom: '10px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-        <span style={{ fontSize: '13px', color: '#94a3b8', fontFamily: "'Outfit', sans-serif" }}>{label}</span>
+        <span style={{ fontSize: '13px', color: '#94a3b8', fontFamily: "'Manrope', sans-serif" }}>{label}</span>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
           {pct !== undefined && <span style={{ fontSize: '11px', color: '#64748b' }}>{pct}%</span>}
           <span style={{ fontSize: '13px', fontWeight: '700', color: '#f8fafc' }}>{value}</span>
@@ -53,7 +53,7 @@ function StatusBadge({ status }) {
     <span style={{
       display: 'inline-block', padding: '3px 10px', borderRadius: '100px',
       fontSize: '11px', fontWeight: '600', background: c.bg, color: c.text,
-      letterSpacing: '0.03em', fontFamily: "'Outfit', sans-serif",
+      letterSpacing: '0.03em', fontFamily: "'Manrope', sans-serif",
     }}>
       {status}
     </span>
@@ -124,7 +124,7 @@ export default function Analytics() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px', color: '#64748b', fontSize: '14px', fontFamily: "'Outfit', sans-serif" }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px', color: '#64748b', fontSize: '14px', fontFamily: "'Manrope', sans-serif" }}>
         Loading analytics...
       </div>
     );
@@ -239,22 +239,22 @@ export default function Analytics() {
   ];
 
   const cardStyle = { background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', padding: '20px' };
-  const sectionTitle = { fontSize: '14px', fontWeight: '600', color: '#f8fafc', marginBottom: '4px', fontFamily: "'Sora', sans-serif" };
-  const sectionSub = { fontSize: '12px', color: '#64748b', marginBottom: '16px', fontFamily: "'Outfit', sans-serif" };
+  const sectionTitle = { fontSize: '14px', fontWeight: '600', color: '#f8fafc', marginBottom: '4px', fontFamily: "'Manrope', sans-serif" };
+  const sectionSub = { fontSize: '12px', color: '#64748b', marginBottom: '16px', fontFamily: "'Manrope', sans-serif" };
 
   return (
     <div>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Sora', sans-serif" }}>Analytics</h1>
-          <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0', fontFamily: "'Outfit', sans-serif" }}>
+          <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Manrope', sans-serif" }}>Analytics</h1>
+          <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0', fontFamily: "'Manrope', sans-serif" }}>
             Axle platform metrics and client insights
           </p>
         </div>
         <button
           onClick={loadData}
-          style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #1E3557', borderRadius: '8px', color: '#94a3b8', fontSize: '13px', cursor: 'pointer', fontFamily: "'Outfit', sans-serif", fontWeight: '500' }}
+          style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #1E3557', borderRadius: '8px', color: '#94a3b8', fontSize: '13px', cursor: 'pointer', fontFamily: "'Manrope', sans-serif", fontWeight: '500' }}
           onMouseEnter={e => { e.target.style.borderColor = '#C8A258'; e.target.style.color = '#C8A258'; }}
           onMouseLeave={e => { e.target.style.borderColor = '#1E3557'; e.target.style.color = '#94a3b8'; }}
         >
@@ -267,9 +267,9 @@ export default function Analytics() {
         {statCards.map(card => (
           <HoverBreakdown key={card.label} title={card.bTitle} headers={card.bHeaders} rows={card.bRows} csvFilename={card.bFile}>
             <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', padding: '18px 20px' }}>
-              <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px', fontFamily: "'Outfit', sans-serif" }}>{card.label}</div>
-              <div style={{ fontSize: '30px', fontWeight: '700', color: card.color || '#f8fafc', lineHeight: 1, fontFamily: "'Sora', sans-serif" }}>{card.value}</div>
-              {card.sub && <div style={{ fontSize: '12px', color: '#64748b', marginTop: '5px', fontFamily: "'Outfit', sans-serif" }}>{card.sub}</div>}
+              <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px', fontFamily: "'Manrope', sans-serif" }}>{card.label}</div>
+              <div style={{ fontSize: '30px', fontWeight: '700', color: card.color || '#f8fafc', lineHeight: 1, fontFamily: "'Manrope', sans-serif" }}>{card.value}</div>
+              {card.sub && <div style={{ fontSize: '12px', color: '#64748b', marginTop: '5px', fontFamily: "'Manrope', sans-serif" }}>{card.sub}</div>}
             </div>
           </HoverBreakdown>
         ))}
@@ -279,13 +279,13 @@ export default function Analytics() {
       <div style={{ ...cardStyle, overflow: 'hidden', padding: 0, marginBottom: '24px' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid #1E3557' }}>
           <div style={sectionTitle}>Axle Clients</div>
-          <div style={{ fontSize: '12px', color: '#64748b', fontFamily: "'Outfit', sans-serif" }}>{orgData.length} organizations</div>
+          <div style={{ fontSize: '12px', color: '#64748b', fontFamily: "'Manrope', sans-serif" }}>{orgData.length} organizations</div>
         </div>
         {orgData.length === 0 ? (
           <div style={{ padding: '40px', textAlign: 'center', color: '#64748b', fontSize: '14px' }}>No organizations found.</div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: "'Outfit', sans-serif" }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: "'Manrope', sans-serif" }}>
               <thead>
                 <tr style={{ background: '#0F2137' }}>
                   {['Organization Name', 'Status', 'Users', 'Activities', 'Last Activity', 'Monthly Revenue'].map(h => (
@@ -330,16 +330,16 @@ export default function Analytics() {
             );
           })}
           <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #1E3557' }}>
-            <div style={{ fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '12px', fontFamily: "'Outfit', sans-serif" }}>Recent Prospects</div>
+            <div style={{ fontSize: '12px', fontWeight: '600', color: '#94a3b8', marginBottom: '12px', fontFamily: "'Manrope', sans-serif" }}>Recent Prospects</div>
             {recentProspects.length === 0 ? (
               <div style={{ color: '#64748b', fontSize: '13px' }}>No prospects yet.</div>
             ) : recentProspects.map((p, idx) => (
               <div key={p.id} style={{ padding: '8px 0', borderBottom: idx < recentProspects.length - 1 ? '1px solid #0B1520' : 'none', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
                 <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontSize: '13px', color: '#f8fafc', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: "'Outfit', sans-serif" }}>
+                  <div style={{ fontSize: '13px', color: '#f8fafc', fontWeight: '600', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: "'Manrope', sans-serif" }}>
                     {p.companyName || p.company || '\u2014'}
                   </div>
-                  <div style={{ fontSize: '11px', color: '#64748b', fontFamily: "'Outfit', sans-serif" }}>
+                  <div style={{ fontSize: '11px', color: '#64748b', fontFamily: "'Manrope', sans-serif" }}>
                     {p.contactName || p.name || `${p.firstName || ''} ${p.lastName || ''}`.trim() || '\u2014'} {'\u00b7'} {timeAgo(p.createdAt || p.submittedAt)}
                   </div>
                 </div>
@@ -365,7 +365,7 @@ export default function Analytics() {
               </HoverBreakdown>
             );
           })}
-          <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #1E3557', fontSize: '13px', color: '#94a3b8', fontFamily: "'Outfit', sans-serif" }}>
+          <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #1E3557', fontSize: '13px', color: '#94a3b8', fontFamily: "'Manrope', sans-serif" }}>
             Average <span style={{ fontWeight: '700', color: '#f8fafc' }}>{avgUsersPerOrg}</span> users per organization
           </div>
         </div>
@@ -408,7 +408,7 @@ export default function Analytics() {
               <BarMetric label={o.name || o.id} value={`$${o.monthlyRevenue.toLocaleString()}`} max={100} color="#C8A258" pct={Math.round(o.monthlyRevenue / (totalMRR || 1) * 100)} />
             </HoverBreakdown>
           ))}
-          <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #1E3557', fontSize: '13px', color: '#94a3b8', fontFamily: "'Outfit', sans-serif" }}>
+          <div style={{ marginTop: '16px', paddingTop: '12px', borderTop: '1px solid #1E3557', fontSize: '13px', color: '#94a3b8', fontFamily: "'Manrope', sans-serif" }}>
             Total MRR: <span style={{ fontWeight: '700', color: '#C8A258' }}>${totalMRR.toLocaleString()}</span>
           </div>
         </div>

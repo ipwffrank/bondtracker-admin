@@ -101,7 +101,7 @@ export default function Organizations() {
   return (
     <div>
       <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Sora', sans-serif" }}>Organizations</h1>
+        <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Manrope', sans-serif" }}>Organizations</h1>
         <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0' }}>{orgs.length} organizations · {totalUsers} total users</p>
       </div>
 
@@ -110,7 +110,7 @@ export default function Organizations() {
           placeholder="Search by name or org ID..."
           value={search}
           onChange={e => setSearch(e.target.value)}
-          style={{ width: '300px', padding: '8px 14px', background: '#162B44', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Outfit', sans-serif" }}
+          style={{ width: '300px', padding: '8px 14px', background: '#162B44', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Manrope', sans-serif" }}
         />
       </div>
 
@@ -159,7 +159,7 @@ export default function Organizations() {
                   color: '#f8fafc',
                   fontSize: '13px',
                   fontWeight: '600',
-                  fontFamily: "'Outfit', sans-serif",
+                  fontFamily: "'Manrope', sans-serif",
                   textAlign: 'center',
                 }}
               />
@@ -177,7 +177,7 @@ export default function Organizations() {
                   color: planInfo.color,
                   fontSize: '12px',
                   fontWeight: '700',
-                  fontFamily: "'Outfit', sans-serif",
+                  fontFamily: "'Manrope', sans-serif",
                   cursor: 'pointer',
                   letterSpacing: '0.03em',
                   textTransform: 'uppercase',

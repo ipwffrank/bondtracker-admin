@@ -20,7 +20,7 @@ function GuardedLayout({ children }) {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: '#0F2137', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', fontFamily: "'Outfit', sans-serif" }}>
+      <div style={{ minHeight: '100vh', background: '#0F2137', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '16px', fontFamily: "'Manrope', sans-serif" }}>
         <div style={{ fontSize: '13px', color: '#64748b', letterSpacing: '0.03em' }}>Verifying access...</div>
       </div>
     );

@@ -41,9 +41,14 @@ async function verifyIdToken(event) {
   try {
     const decoded = await admin.auth().verifyIdToken(idToken);
     return { uid: decoded.uid, email: decoded.email || '', token: decoded };
-  } catch (_) {
+  } catch (originalError) {
+    // Surface the real reason in function logs so we can debug audience
+    // mismatches, expiry, malformed tokens, etc. Client message stays
+    // generic to avoid leaking project info.
+    console.error('verifyIdToken failed:', originalError?.code, originalError?.message);
     const err = new Error('Invalid or expired authentication token');
     err.statusCode = 401;
+    err.cause = originalError;
     throw err;
   }
 }

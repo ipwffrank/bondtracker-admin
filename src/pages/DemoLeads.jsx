@@ -28,6 +28,9 @@ function FieldRow({ label, children }) {
 
 const inputStyle = { width: '100%', padding: '8px 12px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Manrope', sans-serif", boxSizing: 'border-box' };
 
+const EMPTY_ADD_FORM = { firstName: '', lastName: '', email: '', company: '', jobTitle: '', phone: '', employees: '', notes: '' };
+const EMPLOYEE_OPTIONS = ['1-5', '6-30', '31-200', '201-500', '501-2000', '2000+'];
+
 export default function DemoLeads() {
   const { hostUser } = useAuth();
   const [leads, setLeads] = useState([]);
@@ -45,6 +48,10 @@ export default function DemoLeads() {
   const [emailSent, setEmailSent] = useState(false);
   const [emailError, setEmailError] = useState('');
   const [copied, setCopied] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [addForm, setAddForm] = useState(EMPTY_ADD_FORM);
+  const [addingLead, setAddingLead] = useState(false);
+  const [addError, setAddError] = useState('');
 
   useEffect(() => {
     return onSnapshot(collection(db, 'demoRequests'), snap => {
@@ -73,6 +80,64 @@ export default function DemoLeads() {
     setSaved(false);
     setEmailSent(false);
     setEmailError('');
+  };
+
+  // Outbound flow: host adds a prospect they reached out to directly,
+  // bypassing the public landing-page contact form. Creates a demoRequests
+  // doc tagged source='OUTBOUND' so it sits alongside inbound leads but
+  // is distinguishable in the list. After creation, the lead is auto-
+  // selected so host can flow straight into "Onboard to Platform".
+  const handleAddOutboundLead = async (e) => {
+    e?.preventDefault?.();
+    setAddError('');
+    if (!addForm.firstName.trim() || !addForm.lastName.trim() || !addForm.email.trim() || !addForm.company.trim()) {
+      setAddError('First name, last name, email, and company are required.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(addForm.email.trim())) {
+      setAddError('Please enter a valid email address.');
+      return;
+    }
+    setAddingLead(true);
+    try {
+      const ref = await addDoc(collection(db, 'demoRequests'), {
+        firstName: addForm.firstName.trim(),
+        lastName: addForm.lastName.trim(),
+        email: addForm.email.trim().toLowerCase(),
+        company: addForm.company.trim(),
+        jobTitle: addForm.jobTitle.trim() || '',
+        phone: addForm.phone.trim() || '',
+        employees: addForm.employees || '',
+        notes: addForm.notes.trim() || '',
+        status: 'NEW',
+        source: 'OUTBOUND',
+        addedBy: hostUser?.email || 'host-admin',
+        submittedAt: serverTimestamp(),
+        createdAt: serverTimestamp(),
+      });
+      // Optimistically select the new lead so host can proceed to onboarding.
+      // The onSnapshot listener will reconcile the full doc shortly after.
+      const newLead = {
+        id: ref.id,
+        firstName: addForm.firstName.trim(),
+        lastName: addForm.lastName.trim(),
+        email: addForm.email.trim().toLowerCase(),
+        company: addForm.company.trim(),
+        jobTitle: addForm.jobTitle.trim() || '',
+        employees: addForm.employees || '',
+        notes: addForm.notes.trim() || '',
+        status: 'NEW',
+        source: 'OUTBOUND',
+      };
+      setShowAddModal(false);
+      setAddForm(EMPTY_ADD_FORM);
+      selectLead(newLead);
+    } catch (err) {
+      console.error('Failed to add outbound lead:', err);
+      setAddError('Failed to add lead: ' + err.message);
+    } finally {
+      setAddingLead(false);
+    }
   };
 
   const handleSave = async () => {
@@ -154,9 +219,17 @@ export default function DemoLeads() {
   return (
     <div style={{ display: 'flex', height: 'calc(100vh - 64px)', gap: '20px', minWidth: 0 }}>
       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ marginBottom: '20px' }}>
-          <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Manrope', sans-serif" }}>Demo Leads</h1>
-          <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0' }}>{leads.length} total requests · Click a row to manage</p>
+        <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+          <div>
+            <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Manrope', sans-serif" }}>Demo Leads</h1>
+            <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0' }}>{leads.length} total leads · Click a row to manage</p>
+          </div>
+          <button
+            onClick={() => { setAddForm(EMPTY_ADD_FORM); setAddError(''); setShowAddModal(true); }}
+            style={{ background: '#C8A258', color: '#0F2137', border: 'none', borderRadius: '8px', padding: '9px 16px', fontSize: '13px', fontWeight: '600', fontFamily: "'Manrope', sans-serif", cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0 }}
+          >
+            + Add Outbound Lead
+          </button>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '16px', flexWrap: 'wrap' }}>
@@ -191,7 +264,12 @@ export default function DemoLeads() {
               onMouseLeave={e => { if (selected?.id !== lead.id) e.currentTarget.style.background = 'transparent'; }}
             >
               <div style={{ minWidth: 0 }}>
-                <div style={{ fontSize: '13px', fontWeight: '600', color: '#f8fafc' }}>{lead.firstName} {lead.lastName}</div>
+                <div style={{ fontSize: '13px', fontWeight: '600', color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  {lead.firstName} {lead.lastName}
+                  {lead.source === 'OUTBOUND' && (
+                    <span style={{ fontSize: '9px', fontWeight: '700', padding: '2px 6px', borderRadius: '100px', background: 'rgba(200,162,88,0.15)', color: '#C8A258', border: '1px solid rgba(200,162,88,0.3)', letterSpacing: '0.04em' }}>OUTBOUND</span>
+                  )}
+                </div>
                 <div style={{ fontSize: '12px', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lead.email}</div>
               </div>
               <div style={{ minWidth: 0 }}>
@@ -269,6 +347,87 @@ export default function DemoLeads() {
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {showAddModal && (
+        <div
+          onClick={() => { if (!addingLead) setShowAddModal(false); }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}
+        >
+          <form
+            onClick={e => e.stopPropagation()}
+            onSubmit={handleAddOutboundLead}
+            style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', width: '100%', maxWidth: '480px', maxHeight: '90vh', overflowY: 'auto', fontFamily: "'Manrope', sans-serif" }}
+          >
+            <div style={{ padding: '18px 20px', borderBottom: '1px solid #1E3557', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontSize: '15px', fontWeight: '700', color: '#f8fafc' }}>Add Outbound Lead</div>
+                <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>For prospects you reached out to directly</div>
+              </div>
+              <button type="button" onClick={() => setShowAddModal(false)} disabled={addingLead} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', fontSize: '20px', lineHeight: 1, padding: '0 4px' }}>×</button>
+            </div>
+
+            <div style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>First Name *</span>
+                  <input value={addForm.firstName} onChange={e => setAddForm({ ...addForm, firstName: e.target.value })} disabled={addingLead} style={inputStyle} />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Last Name *</span>
+                  <input value={addForm.lastName} onChange={e => setAddForm({ ...addForm, lastName: e.target.value })} disabled={addingLead} style={inputStyle} />
+                </label>
+              </div>
+
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '11px', fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Email *</span>
+                <input type="email" value={addForm.email} onChange={e => setAddForm({ ...addForm, email: e.target.value })} disabled={addingLead} style={inputStyle} />
+              </label>
+
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '11px', fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Company *</span>
+                <input value={addForm.company} onChange={e => setAddForm({ ...addForm, company: e.target.value })} disabled={addingLead} style={inputStyle} />
+              </label>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Job Title</span>
+                  <input value={addForm.jobTitle} onChange={e => setAddForm({ ...addForm, jobTitle: e.target.value })} disabled={addingLead} style={inputStyle} />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Phone</span>
+                  <input value={addForm.phone} onChange={e => setAddForm({ ...addForm, phone: e.target.value })} disabled={addingLead} style={inputStyle} />
+                </label>
+              </div>
+
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '11px', fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Team Size</span>
+                <select value={addForm.employees} onChange={e => setAddForm({ ...addForm, employees: e.target.value })} disabled={addingLead} style={inputStyle}>
+                  <option value="">Not specified</option>
+                  {EMPLOYEE_OPTIONS.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                </select>
+              </label>
+
+              <label style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '11px', fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Internal Notes</span>
+                <textarea value={addForm.notes} onChange={e => setAddForm({ ...addForm, notes: e.target.value })} disabled={addingLead} rows={3} placeholder="Where you met, what they're interested in, etc." style={{ ...inputStyle, resize: 'vertical', fontFamily: "'Manrope', sans-serif" }} />
+              </label>
+
+              {addError && (
+                <div style={{ fontSize: '12px', color: '#f87171', background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)', padding: '8px 12px', borderRadius: '6px' }}>{addError}</div>
+              )}
+            </div>
+
+            <div style={{ padding: '14px 20px', borderTop: '1px solid #1E3557', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button type="button" onClick={() => setShowAddModal(false)} disabled={addingLead} style={{ padding: '8px 16px', background: 'transparent', border: '1px solid #1E3557', borderRadius: '6px', color: '#94a3b8', fontSize: '13px', fontWeight: '600', fontFamily: "'Manrope', sans-serif", cursor: 'pointer' }}>
+                Cancel
+              </button>
+              <button type="submit" disabled={addingLead} style={{ padding: '8px 18px', background: '#C8A258', border: 'none', borderRadius: '6px', color: '#0F2137', fontSize: '13px', fontWeight: '600', fontFamily: "'Manrope', sans-serif", cursor: addingLead ? 'wait' : 'pointer', opacity: addingLead ? 0.7 : 1 }}>
+                {addingLead ? 'Adding...' : 'Add Lead'}
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>

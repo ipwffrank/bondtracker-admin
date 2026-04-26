@@ -30,10 +30,11 @@ export default function HostAdmins() {
     setAdding(true);
     setMessage(null);
     try {
-      // Look up user in Firebase Auth via Netlify function
+      // Look up user in Firebase Auth via Netlify function (host-admin gated)
+      const idToken = hostUser ? await hostUser.getIdToken() : '';
       const res = await fetch('/.netlify/functions/lookup-user', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
         body: JSON.stringify({ email: email.trim() }),
       });
       let data;

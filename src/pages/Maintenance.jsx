@@ -102,12 +102,13 @@ export default function Maintenance() {
 
       const docRef = await addDoc(collection(db, 'maintenance'), docData);
 
-      // Send notification emails via Netlify function
+      // Send notification emails via Netlify function (host-admin gated)
       setEmailStatus('Sending notification emails...');
       try {
+        const idToken = hostUser ? await hostUser.getIdToken() : '';
         const resp = await fetch('/.netlify/functions/send-maintenance-email', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
           body: JSON.stringify({
             maintenanceId: docRef.id,
             title: form.title,
@@ -159,9 +160,10 @@ export default function Maintenance() {
   async function handleResendEmail(mw) {
     if (!window.confirm(`Resend maintenance notification for "${mw.title}"?`)) return;
     try {
+      const idToken = hostUser ? await hostUser.getIdToken() : '';
       const resp = await fetch('/.netlify/functions/send-maintenance-email', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
         body: JSON.stringify({
           maintenanceId: mw.id,
           title: mw.title,

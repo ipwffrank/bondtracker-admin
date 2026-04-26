@@ -1,15 +1,19 @@
 const admin = require('firebase-admin');
+const { verifyHostAdmin, initFirebaseAdmin } = require('./utils/auth.cjs');
 
-if (!admin.apps.length) {
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-}
+initFirebaseAdmin();
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
+  }
+
+  // Host admin only — leaks Firebase Auth identity (email, displayName)
+  // by design; callers must be authenticated host admins.
+  try {
+    await verifyHostAdmin(event);
+  } catch (err) {
+    return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: err.message }) };
   }
 
   try {

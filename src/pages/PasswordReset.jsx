@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebase';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function PasswordReset() {
+  const { hostUser } = useAuth();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null); // { type, text }
@@ -14,9 +16,10 @@ export default function PasswordReset() {
     setLoading(true);
     setMessage(null);
     try {
+      const idToken = hostUser ? await hostUser.getIdToken() : '';
       const res = await fetch('/.netlify/functions/host-reset-password', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
         body: JSON.stringify({ email: email.trim() }),
       });
       let data;

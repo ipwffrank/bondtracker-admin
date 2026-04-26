@@ -1,20 +1,18 @@
 const { Resend } = require('resend');
 const admin = require('firebase-admin');
+const { verifyHostAdmin, initFirebaseAdmin } = require('./utils/auth.cjs');
 
-// Initialize Firebase Admin if not already initialized
-if (!admin.apps.length) {
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT || '{}');
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-}
+initFirebaseAdmin();
 
 const dbAdmin = admin.firestore();
 
 exports.handler = async (event) => {
+  // Tighten CORS: previous "*" let anywhere call this; only the admin
+  // portal should be hitting it. Authorization header must also be
+  // allowed for the host-admin token.
   const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Origin': 'https://admin.axle-finance.com',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
 
@@ -24,6 +22,14 @@ exports.handler = async (event) => {
 
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+  }
+
+  // Host admin only — this function emails EVERY user in the platform.
+  // Without authentication anyone could spam the entire user base.
+  try {
+    await verifyHostAdmin(event);
+  } catch (err) {
+    return { statusCode: err.statusCode || 401, headers, body: JSON.stringify({ error: err.message }) };
   }
 
   try {

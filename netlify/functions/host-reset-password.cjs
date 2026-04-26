@@ -1,17 +1,21 @@
 const admin = require('firebase-admin');
 const { Resend } = require('resend');
+const { verifyHostAdmin, initFirebaseAdmin } = require('./utils/auth.cjs');
 
-// Initialize Firebase Admin (lazy singleton)
-if (!admin.apps.length) {
-  const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
-}
+initFirebaseAdmin();
 
 exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
+  }
+
+  // Host admin only — generates a password-reset link and emails it.
+  // Without this guard, anyone who finds the URL could trigger reset
+  // emails to harass users or hijack accounts via timing.
+  try {
+    await verifyHostAdmin(event);
+  } catch (err) {
+    return { statusCode: err.statusCode || 401, body: JSON.stringify({ error: err.message }) };
   }
 
   try {

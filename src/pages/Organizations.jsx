@@ -104,16 +104,22 @@ export default function Organizations() {
   }
 
   async function handleExtendPilot(orgId, days, currentEndAt) {
-    if (!Number.isInteger(days) || days <= 0) return;
-    // Extend from later of (current end, now) so extending an expired
-    // pilot pushes the deadline into the future, not just one day forward.
-    const base = currentEndAt && currentEndAt > new Date() ? currentEndAt : new Date();
+    // Negative values shift the end date earlier (useful for testing the
+    // 7d / 3d / day-of / expired email paths without waiting). 0 is a no-op.
+    if (!Number.isInteger(days) || days === 0) return;
+    // For positive shifts, extend from later of (current end, now) so
+    // extending an expired pilot pushes the deadline into the future.
+    // For negative shifts, anchor at currentEndAt — the user is explicitly
+    // dragging the end date earlier, even into the past to fire "expired".
+    const base = days > 0 && (!currentEndAt || currentEndAt < new Date())
+      ? new Date()
+      : (currentEndAt || new Date());
     const newEnd = new Date(base.getTime() + days * 86_400_000);
     try {
       await updateDoc(doc(db, 'organizations', orgId), {
         pilotEndAt: Timestamp.fromDate(newEnd),
         pilotStatus: 'active',
-        // Reset reminders so the new window gets fresh emails.
+        // Reset reminders so the new window earns fresh emails.
         pilotRemindersSent: deleteField(),
         pilotUpdatedAt: serverTimestamp(),
         pilotUpdatedBy: hostUser?.email || 'host-admin',
@@ -401,13 +407,13 @@ export default function Organizations() {
                         >+30d</button>
                         <button
                           onClick={() => {
-                            const v = window.prompt('Extend by how many days?', '60');
+                            const v = window.prompt('Shift the pilot end date by how many days? (positive = extend, negative = bring forward, e.g. -23 to set "7 days left" on a fresh 30d pilot)', '60');
                             const n = parseInt(v, 10);
-                            if (n > 0) handleExtendPilot(org.id, n, endAt);
+                            if (Number.isInteger(n) && n !== 0) handleExtendPilot(org.id, n, endAt);
                           }}
-                          title="Extend pilot by a custom number of days"
+                          title="Shift the pilot end date by a custom number of days (negative shifts earlier)"
                           style={{ background: 'transparent', border: '1px solid #1E3557', color: '#94a3b8', borderRadius: '5px', padding: '3px 8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Manrope', sans-serif" }}
-                        >+ Other</button>
+                        >Shift…</button>
                         <button
                           onClick={() => handleEndPilot(org.id)}
                           title="End pilot immediately"

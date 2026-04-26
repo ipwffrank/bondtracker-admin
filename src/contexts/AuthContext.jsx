@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../firebase';
+import { setSentryUser } from '../sentry';
 
 const AuthContext = createContext({});
 
@@ -21,14 +22,17 @@ export function AuthProvider({ children }) {
         if (snap.exists()) {
           setHostUser(user);
           setIsHost(true);
+          setSentryUser(user);
         } else {
           await signOut(auth);
           setHostUser(null);
           setIsHost(false);
+          setSentryUser(null);
         }
       } else {
         setHostUser(null);
         setIsHost(false);
+        setSentryUser(null);
       }
       setLoading(false);
     });

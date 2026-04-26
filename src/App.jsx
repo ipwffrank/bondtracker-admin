@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { Sentry } from './sentry';
 import Sidebar, { SIDEBAR_EXPANDED, SIDEBAR_COLLAPSED } from './components/Sidebar';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -63,12 +64,36 @@ function AppRoutes() {
   );
 }
 
+function AdminErrorFallback({ resetError }) {
+  return (
+    <div style={{
+      minHeight: '100vh', background: '#0F2137', color: '#f8fafc',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: "'Manrope', sans-serif", padding: '24px',
+    }}>
+      <div style={{ textAlign: 'center', maxWidth: '420px' }}>
+        <h1 style={{ fontSize: '20px', fontWeight: 700, marginBottom: '10px' }}>Admin portal hit an error</h1>
+        <p style={{ color: '#94a3b8', fontSize: '14px', marginBottom: '24px', lineHeight: 1.6 }}>
+          The error has been logged. Try reloading the page.
+        </p>
+        <button onClick={resetError} style={{
+          background: '#C8A258', color: '#0F2137', border: 'none', borderRadius: '8px',
+          padding: '10px 24px', fontSize: '14px', fontWeight: 700, cursor: 'pointer',
+          fontFamily: 'inherit',
+        }}>Reload</button>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
-    </BrowserRouter>
+    <Sentry.ErrorBoundary fallback={AdminErrorFallback} showDialog={false}>
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </BrowserRouter>
+    </Sentry.ErrorBoundary>
   );
 }

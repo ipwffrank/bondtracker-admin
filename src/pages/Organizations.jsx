@@ -5,18 +5,23 @@ import { useAuth } from '../contexts/AuthContext';
 
 const PILOT_DEFAULT_DAYS = 30;
 
-// Short labels keep the Plan column narrow. Tooltip shows the price tier
-// for anyone who needs the reminder.
+// Short labels keep the Plan column narrow. Tooltip shows the flat-fee
+// monthly + seat cap so host admins can sanity-check billing at a glance.
+// Numbers must stay in sync with main app's src/config/pricing.js.
 const PLAN_OPTIONS = [
-  { value: 'essential',    label: 'Essential',    color: '#64748b', tooltip: '$250 / user / month' },
-  { value: 'growth',       label: 'Growth',       color: '#C8A258', tooltip: '$400 / user / month' },
-  { value: 'professional', label: 'Professional', color: '#16a34a', tooltip: '$450 / user / month' },
+  { value: 'essential',    label: 'Essential',    color: '#64748b', tooltip: '$799/mo · up to 5 seats' },
+  { value: 'growth',       label: 'Growth',       color: '#C8A258', tooltip: '$2,800/mo · up to 20 seats · SSO + AI' },
+  { value: 'professional', label: 'Professional', color: '#16a34a', tooltip: '$5,500/mo · unlimited seats · API + CSM' },
 ];
 
+// Default seat cap when an org's plan changes and no explicit override
+// is set. Professional has no cap; we use a high sentinel so the maxUsers
+// integer field still works without schema changes (host admin can
+// override per-org if needed for enterprise contracts).
 const TIER_DEFAULTS = {
   essential: 5,
-  growth: 8,
-  professional: 15,
+  growth: 20,
+  professional: 9999,
 };
 
 export default function Organizations() {

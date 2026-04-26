@@ -62,10 +62,14 @@ export default function Organizations() {
   async function handlePlanChange(orgId, newPlan) {
     setUpdatingPlan(orgId);
     try {
-      const org = orgs.find(o => o.id === orgId);
-      const currentMax = org?.maxUsers || TIER_DEFAULTS[org?.plan] || TIER_DEFAULTS.essential;
       const newDefault = TIER_DEFAULTS[newPlan] || TIER_DEFAULTS.essential;
-      const newMax = Math.max(currentMax, newDefault);
+      // Set maxUsers to the new tier's default, but never below the current
+      // active-user count. Downgrading from Growth (20) to Essential (5) on an
+      // org with 4 users → maxUsers becomes 5. Same downgrade with 18 users →
+      // maxUsers becomes 18 so existing users aren't locked out; the host can
+      // adjust manually after they remove users.
+      const activeUsers = userCounts[orgId] || 0;
+      const newMax = Math.max(newDefault, activeUsers);
 
       await updateDoc(doc(db, 'organizations', orgId), {
         plan: newPlan,

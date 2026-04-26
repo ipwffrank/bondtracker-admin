@@ -3,12 +3,12 @@ import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBkQnlYdOsIki_VuEpMBsIFACLN-u2FYFo",
-  authDomain: "bond-sales-tracker.firebaseapp.com",
-  projectId: "bond-sales-tracker",
-  storageBucket: "bond-sales-tracker.firebasestorage.app",
-  messagingSenderId: "293591418173",
-  appId: "1:293591418173:web:b0ca2b77f514dc6c9b3154"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);

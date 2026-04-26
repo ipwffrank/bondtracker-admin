@@ -27,6 +27,32 @@ export default function Organizations() {
   const [search, setSearch] = useState('');
   const [updatingPlan, setUpdatingPlan] = useState(null); // orgId being updated
   const [editingMaxUsers, setEditingMaxUsers] = useState(null); // { orgId, value }
+  const [reminderRunning, setReminderRunning] = useState(false);
+  const [reminderResult, setReminderResult] = useState(null);
+
+  // Manual trigger of the pilot-reminders Netlify function in the main app.
+  // Useful for smoke-testing without waiting for the daily 01:00 UTC cron.
+  // The function lives at axle-finance.com (cross-origin from the admin
+  // portal); CORS allowlist on that side includes admin.axle-finance.com.
+  async function handleRunReminders() {
+    if (!hostUser) return;
+    setReminderRunning(true);
+    setReminderResult(null);
+    try {
+      const idToken = await hostUser.getIdToken();
+      const r = await fetch('https://axle-finance.com/.netlify/functions/pilot-reminders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+      });
+      const body = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(body.error || `HTTP ${r.status}`);
+      setReminderResult(body);
+    } catch (err) {
+      setReminderResult({ ok: false, error: err.message });
+    } finally {
+      setReminderRunning(false);
+    }
+  }
 
   async function handlePlanChange(orgId, newPlan) {
     setUpdatingPlan(orgId);
@@ -170,9 +196,47 @@ export default function Organizations() {
 
   return (
     <div>
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Manrope', sans-serif" }}>Organizations</h1>
-        <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0' }}>{orgs.length} organizations · {totalUsers} total users</p>
+      <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap' }}>
+        <div>
+          <h1 style={{ fontSize: '24px', fontWeight: '700', color: '#f8fafc', margin: 0, letterSpacing: '-0.3px', fontFamily: "'Manrope', sans-serif" }}>Organizations</h1>
+          <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0' }}>{orgs.length} organizations · {totalUsers} total users</p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {reminderResult && (
+            <span style={{
+              fontSize: '12px',
+              color: reminderResult.ok === false ? '#f87171' : '#34d399',
+              background: reminderResult.ok === false ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)',
+              border: `1px solid ${reminderResult.ok === false ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`,
+              padding: '4px 10px',
+              borderRadius: '6px',
+              fontWeight: 600,
+            }}>
+              {reminderResult.ok === false
+                ? `Failed: ${reminderResult.error}`
+                : `Sent ${(reminderResult.results || []).filter(r => r.sent).length} · skipped ${(reminderResult.results || []).filter(r => r.skipped).length}`}
+            </span>
+          )}
+          <button
+            onClick={handleRunReminders}
+            disabled={reminderRunning}
+            title="Manually run the pilot-reminder check now (otherwise runs daily at 09:00 SGT)"
+            style={{
+              padding: '8px 14px',
+              background: 'transparent',
+              border: '1px solid rgba(200,162,88,0.5)',
+              borderRadius: '8px',
+              color: '#C8A258',
+              fontSize: '13px',
+              fontWeight: 600,
+              fontFamily: "'Manrope', sans-serif",
+              cursor: reminderRunning ? 'wait' : 'pointer',
+              opacity: reminderRunning ? 0.6 : 1,
+            }}
+          >
+            {reminderRunning ? 'Running…' : 'Run pilot reminders now'}
+          </button>
+        </div>
       </div>
 
       <div style={{ marginBottom: '16px' }}>

@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { collection, doc, getDoc, onSnapshot, updateDoc, setDoc, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../firebase';
+import { useAuth } from '../contexts/AuthContext';
 
-const TIER_DEFAULTS = { essential: 5, essentials: 5, growth: 8, professional: 15 };
+const TIER_DEFAULTS = { essential: 5, essentials: 5, growth: 20, professional: 9999 };
 const STATUSES = ['NEW', 'CONTACTED', 'DEMO SCHEDULED', 'ONBOARDING', 'ACTIVE', 'REJECTED'];
 const STATUS_COLORS = { NEW: '#3b82f6', CONTACTED: '#f59e0b', 'DEMO SCHEDULED': '#8b5cf6', ONBOARDING: '#10b981', ACTIVE: '#059669', REJECTED: '#ef4444' };
-const PROD_URL = 'https://axle-finance.com';
+// Main app URL for invite links + send-invite function calls. Configured
+// per-environment via VITE_MAIN_APP_URL (e.g. axle-staging.netlify.app
+// for the staging admin); falls back to prod for the prod admin deploy.
+const APP_URL = import.meta.env.VITE_MAIN_APP_URL || 'https://axle-finance.com';
 
 function StatusBadge({ status }) {
   const s = status || 'NEW';
@@ -25,6 +29,7 @@ function FieldRow({ label, children }) {
 const inputStyle = { width: '100%', padding: '8px 12px', background: '#0B1520', border: '1px solid #1E3557', borderRadius: '8px', color: '#f8fafc', fontSize: '13px', fontFamily: "'Manrope', sans-serif", boxSizing: 'border-box' };
 
 export default function DemoLeads() {
+  const { hostUser } = useAuth();
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -105,13 +110,15 @@ export default function DemoLeads() {
         invitedBy: 'Host Admin', status: 'pending', emailSent: false,
         createdAt: serverTimestamp(), expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       });
-      const link = `${PROD_URL}/accept-invite?org=${orgId}&token=${invRef.id}`;
+      const link = `${APP_URL}/accept-invite?org=${orgId}&token=${invRef.id}`;
       setInviteLink(link);
       setEmailSent(false);
       setEmailError('');
       try {
-        const res = await fetch(`${PROD_URL}/.netlify/functions/send-invite`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
+        const idToken = hostUser ? await hostUser.getIdToken() : '';
+        const res = await fetch(`${APP_URL}/.netlify/functions/send-invite`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
           body: JSON.stringify({ email: selected.email, organizationName: orgName.trim(), invitedBy: 'Host Admin', role: orgRole, signupUrl: link }),
         });
         const data = await res.json();
@@ -119,7 +126,7 @@ export default function DemoLeads() {
           setEmailSent(true);
           await updateDoc(doc(db, 'organizations', orgId, 'invitations', invRef.id), { emailSent: true });
         } else {
-          setEmailError('Email delivery failed — share the link manually.');
+          setEmailError(data.error ? `Email delivery failed: ${data.error}` : 'Email delivery failed — share the link manually.');
         }
       } catch {
         setEmailError('Could not reach email service — share the link manually.');

@@ -202,21 +202,54 @@ export default function Organizations() {
           <p style={{ color: '#64748b', fontSize: '14px', margin: '4px 0 0' }}>{orgs.length} organizations · {totalUsers} total users</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {reminderResult && (
-            <span style={{
-              fontSize: '12px',
-              color: reminderResult.ok === false ? '#f87171' : '#34d399',
-              background: reminderResult.ok === false ? 'rgba(239,68,68,0.1)' : 'rgba(16,185,129,0.1)',
-              border: `1px solid ${reminderResult.ok === false ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`,
-              padding: '4px 10px',
-              borderRadius: '6px',
-              fontWeight: 600,
-            }}>
-              {reminderResult.ok === false
-                ? `Failed: ${reminderResult.error}`
-                : `Sent ${(reminderResult.results || []).filter(r => r.sent).length} · skipped ${(reminderResult.results || []).filter(r => r.skipped).length}`}
-            </span>
-          )}
+          {reminderResult && (() => {
+            if (reminderResult.ok === false) {
+              return (
+                <span style={{ fontSize: '12px', color: '#f87171', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', padding: '4px 10px', borderRadius: '6px', fontWeight: 600 }}>
+                  Failed: {reminderResult.error}
+                </span>
+              );
+            }
+            const sent = (reminderResult.results || []).filter(r => r.sent);
+            const skipped = (reminderResult.results || []).filter(r => r.skipped);
+            const errors = (reminderResult.results || []).filter(r => r.error);
+            return (
+              <details style={{ fontSize: '12px' }}>
+                <summary style={{
+                  cursor: 'pointer', listStyle: 'none', userSelect: 'none',
+                  color: sent.length > 0 ? '#34d399' : '#94a3b8',
+                  background: sent.length > 0 ? 'rgba(16,185,129,0.1)' : 'rgba(148,163,184,0.08)',
+                  border: `1px solid ${sent.length > 0 ? 'rgba(16,185,129,0.3)' : 'rgba(148,163,184,0.25)'}`,
+                  padding: '4px 10px', borderRadius: '6px', fontWeight: 600,
+                }}>
+                  Sent {sent.length} · skipped {skipped.length}{errors.length ? ` · errors ${errors.length}` : ''} · click for details
+                </summary>
+                <div style={{
+                  marginTop: '6px', background: '#0B1520', border: '1px solid #1E3557',
+                  borderRadius: '8px', padding: '10px 12px', maxHeight: '220px', overflowY: 'auto',
+                  fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', lineHeight: 1.7,
+                  color: '#94a3b8', minWidth: '320px',
+                }}>
+                  {(reminderResult.results || []).map((r, i) => {
+                    const colour = r.sent ? '#34d399' : r.error ? '#f87171' : '#94a3b8';
+                    const label = r.sent
+                      ? `sent ${r.sent.milestone} -> ${r.sent.recipients} recipient${r.sent.recipients === 1 ? '' : 's'}`
+                      : r.error
+                      ? `error: ${r.error}`
+                      : `skipped: ${r.skipped}`;
+                    return (
+                      <div key={i} style={{ color: colour }}>
+                        <span style={{ color: '#cbd5e1' }}>{r.orgId}</span> &nbsp; {label}
+                      </div>
+                    );
+                  })}
+                  {(reminderResult.results || []).length === 0 && (
+                    <div>No orgs in pilot programme.</div>
+                  )}
+                </div>
+              </details>
+            );
+          })()}
           <button
             onClick={handleRunReminders}
             disabled={reminderRunning}

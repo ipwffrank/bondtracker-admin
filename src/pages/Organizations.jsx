@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { collection, onSnapshot, doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, serverTimestamp, deleteField, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
+
+const PILOT_DEFAULT_DAYS = 30;
 
 const PLAN_OPTIONS = [
   { value: 'essential', label: 'Essential · $250/user', color: '#64748b' },
@@ -43,6 +45,66 @@ export default function Organizations() {
       alert('Failed to update plan: ' + err.message);
     } finally {
       setUpdatingPlan(null);
+    }
+  }
+
+  // Pilot programme controls. Host admins can:
+  // - start a pilot from today for N days (default 30)
+  // - extend an existing pilot by N days (works whether active or expired)
+  // - end a pilot (clears the pilot fields entirely, returning the org
+  //   to its plan-based access)
+  async function handleStartPilot(orgId, days = PILOT_DEFAULT_DAYS) {
+    if (!Number.isInteger(days) || days <= 0) return;
+    const start = new Date();
+    const end = new Date(start.getTime() + days * 86_400_000);
+    try {
+      await updateDoc(doc(db, 'organizations', orgId), {
+        pilotStartedAt: Timestamp.fromDate(start),
+        pilotEndAt: Timestamp.fromDate(end),
+        pilotDurationDays: days,
+        pilotStatus: 'active',
+        pilotUpdatedAt: serverTimestamp(),
+        pilotUpdatedBy: hostUser?.email || 'host-admin',
+      });
+    } catch (err) {
+      console.error('Failed to start pilot', err);
+      alert('Failed to start pilot: ' + err.message);
+    }
+  }
+
+  async function handleExtendPilot(orgId, days, currentEndAt) {
+    if (!Number.isInteger(days) || days <= 0) return;
+    // Extend from later of (current end, now) so extending an expired
+    // pilot pushes the deadline into the future, not just one day forward.
+    const base = currentEndAt && currentEndAt > new Date() ? currentEndAt : new Date();
+    const newEnd = new Date(base.getTime() + days * 86_400_000);
+    try {
+      await updateDoc(doc(db, 'organizations', orgId), {
+        pilotEndAt: Timestamp.fromDate(newEnd),
+        pilotStatus: 'active',
+        pilotUpdatedAt: serverTimestamp(),
+        pilotUpdatedBy: hostUser?.email || 'host-admin',
+      });
+    } catch (err) {
+      console.error('Failed to extend pilot', err);
+      alert('Failed to extend pilot: ' + err.message);
+    }
+  }
+
+  async function handleEndPilot(orgId) {
+    if (!window.confirm('End this pilot now? The org loses pilot status and the banner is removed.')) return;
+    try {
+      await updateDoc(doc(db, 'organizations', orgId), {
+        pilotStartedAt: deleteField(),
+        pilotEndAt: deleteField(),
+        pilotDurationDays: deleteField(),
+        pilotStatus: deleteField(),
+        pilotUpdatedAt: serverTimestamp(),
+        pilotUpdatedBy: hostUser?.email || 'host-admin',
+      });
+    } catch (err) {
+      console.error('Failed to end pilot', err);
+      alert('Failed to end pilot: ' + err.message);
     }
   }
 
@@ -115,8 +177,8 @@ export default function Organizations() {
       </div>
 
       <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', overflow: 'hidden' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 2.5fr 80px 100px 160px 1fr', padding: '10px 20px', borderBottom: '1px solid #1E3557', fontSize: '11px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          <span>Organization</span><span>Org ID</span><span>Users</span><span>Max Users</span><span>Plan</span><span>Created</span>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 70px 90px 150px 220px 110px', padding: '10px 20px', borderBottom: '1px solid #1E3557', fontSize: '11px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <span>Organization</span><span>Org ID</span><span>Users</span><span>Max Users</span><span>Plan</span><span>Pilot</span><span>Created</span>
         </div>
         {loading ? (
           <div style={{ padding: '48px', textAlign: 'center', color: '#64748b' }}>Loading...</div>
@@ -126,7 +188,7 @@ export default function Organizations() {
           const currentPlan = org.plan || 'essential';
           const planInfo = PLAN_OPTIONS.find(p => p.value === currentPlan) || PLAN_OPTIONS[0];
           return (
-          <div key={org.id} style={{ display: 'grid', gridTemplateColumns: '2fr 2.5fr 80px 100px 160px 1fr', padding: '14px 20px', borderBottom: '1px solid #0B1520', alignItems: 'center' }}>
+          <div key={org.id} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 70px 90px 150px 220px 110px', padding: '14px 20px', borderBottom: '1px solid #0B1520', alignItems: 'center' }}>
             <div style={{ fontSize: '14px', fontWeight: '600', color: '#f8fafc' }}>{org.name || org.id}</div>
             <div style={{ fontSize: '12px', color: '#64748b', fontFamily: "'JetBrains Mono', monospace", background: '#0B1520', padding: '3px 8px', borderRadius: '4px', display: 'inline-block', letterSpacing: '0.02em' }}>{org.id}</div>
             <div>
@@ -189,6 +251,66 @@ export default function Organizations() {
                 ))}
               </select>
             </div>
+            {(() => {
+              const endAt = org.pilotEndAt?.toDate?.() || (org.pilotEndAt ? new Date(org.pilotEndAt) : null);
+              const now = new Date();
+              const inPilot = !!endAt;
+              const expired = inPilot && endAt <= now;
+              const daysLeft = inPilot && !expired ? Math.ceil((endAt - now) / 86_400_000) : 0;
+              const pillBg = !inPilot ? 'transparent'
+                : expired ? 'rgba(239,68,68,0.12)'
+                : daysLeft <= 7 ? 'rgba(245,158,11,0.18)'
+                : 'rgba(16,185,129,0.15)';
+              const pillFg = !inPilot ? '#64748b'
+                : expired ? '#f87171'
+                : daysLeft <= 7 ? '#fbbf24'
+                : '#34d399';
+              const pillBorder = !inPilot ? '1px solid #1E3557'
+                : `1px solid ${pillFg}55`;
+              return (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <span style={{
+                    display: 'inline-block', alignSelf: 'flex-start',
+                    fontSize: '11px', fontWeight: 700, padding: '3px 9px', borderRadius: '100px',
+                    background: pillBg, color: pillFg, border: pillBorder,
+                    letterSpacing: '0.04em', textTransform: 'uppercase',
+                  }}>
+                    {!inPilot ? 'Not in pilot' : expired ? `Ended ${formatDate(org.pilotEndAt)}` : `${daysLeft}d left`}
+                  </span>
+                  <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                    {!inPilot && (
+                      <button
+                        onClick={() => handleStartPilot(org.id, PILOT_DEFAULT_DAYS)}
+                        style={{ background: 'transparent', border: '1px solid rgba(200,162,88,0.4)', color: '#C8A258', borderRadius: '5px', padding: '3px 8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Manrope', sans-serif" }}
+                      >Start +30d</button>
+                    )}
+                    {inPilot && (
+                      <>
+                        <button
+                          onClick={() => handleExtendPilot(org.id, 30, endAt)}
+                          title="Extend pilot by 30 days"
+                          style={{ background: 'transparent', border: '1px solid rgba(16,185,129,0.5)', color: '#34d399', borderRadius: '5px', padding: '3px 8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Manrope', sans-serif" }}
+                        >+30d</button>
+                        <button
+                          onClick={() => {
+                            const v = window.prompt('Extend by how many days?', '60');
+                            const n = parseInt(v, 10);
+                            if (n > 0) handleExtendPilot(org.id, n, endAt);
+                          }}
+                          title="Extend pilot by a custom number of days"
+                          style={{ background: 'transparent', border: '1px solid #1E3557', color: '#94a3b8', borderRadius: '5px', padding: '3px 8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Manrope', sans-serif" }}
+                        >+ Other</button>
+                        <button
+                          onClick={() => handleEndPilot(org.id)}
+                          title="End pilot immediately"
+                          style={{ background: 'transparent', border: '1px solid rgba(239,68,68,0.5)', color: '#f87171', borderRadius: '5px', padding: '3px 8px', fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: "'Manrope', sans-serif" }}
+                        >End</button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
             <div style={{ fontSize: '12px', color: '#64748b' }}>{formatDate(org.createdAt)}</div>
           </div>
           );

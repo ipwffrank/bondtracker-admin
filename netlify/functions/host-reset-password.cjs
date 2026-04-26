@@ -33,9 +33,13 @@ exports.handler = async (event) => {
       return { statusCode: 404, body: JSON.stringify({ error: 'No user found with this email' }) };
     }
 
-    // Generate password reset link
+    // Generate password reset link. The continue URL must be on a
+    // domain in the Firebase project's authorized list. Override per
+    // environment via PASSWORD_RESET_RETURN_URL (e.g. axle-staging
+    // points to its own URL); falls back to prod for the prod deploy.
+    const returnUrl = process.env.PASSWORD_RESET_RETURN_URL || 'https://www.axle-finance.com/login';
     const resetLink = await admin.auth().generatePasswordResetLink(email, {
-      url: 'https://www.axle-finance.com/login',
+      url: returnUrl,
     });
 
     // Send reset email via Resend

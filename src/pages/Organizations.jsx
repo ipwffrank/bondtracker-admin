@@ -5,10 +5,12 @@ import { useAuth } from '../contexts/AuthContext';
 
 const PILOT_DEFAULT_DAYS = 30;
 
+// Short labels keep the Plan column narrow. Tooltip shows the price tier
+// for anyone who needs the reminder.
 const PLAN_OPTIONS = [
-  { value: 'essential', label: 'Essential · $250/user', color: '#64748b' },
-  { value: 'growth', label: 'Growth · $400/user', color: '#C8A258' },
-  { value: 'professional', label: 'Professional · $450/user', color: '#16a34a' },
+  { value: 'essential',    label: 'Essential',    color: '#64748b', tooltip: '$250 / user / month' },
+  { value: 'growth',       label: 'Growth',       color: '#C8A258', tooltip: '$400 / user / month' },
+  { value: 'professional', label: 'Professional', color: '#16a34a', tooltip: '$450 / user / month' },
 ];
 
 const TIER_DEFAULTS = {
@@ -63,6 +65,9 @@ export default function Organizations() {
         pilotEndAt: Timestamp.fromDate(end),
         pilotDurationDays: days,
         pilotStatus: 'active',
+        // Reset the per-milestone reminder log so the new pilot window
+        // earns its own 14d / 7d / 3d / day-of / expired emails.
+        pilotRemindersSent: deleteField(),
         pilotUpdatedAt: serverTimestamp(),
         pilotUpdatedBy: hostUser?.email || 'host-admin',
       });
@@ -82,6 +87,8 @@ export default function Organizations() {
       await updateDoc(doc(db, 'organizations', orgId), {
         pilotEndAt: Timestamp.fromDate(newEnd),
         pilotStatus: 'active',
+        // Reset reminders so the new window gets fresh emails.
+        pilotRemindersSent: deleteField(),
         pilotUpdatedAt: serverTimestamp(),
         pilotUpdatedBy: hostUser?.email || 'host-admin',
       });
@@ -99,6 +106,7 @@ export default function Organizations() {
         pilotEndAt: deleteField(),
         pilotDurationDays: deleteField(),
         pilotStatus: deleteField(),
+        pilotRemindersSent: deleteField(),
         pilotUpdatedAt: serverTimestamp(),
         pilotUpdatedBy: hostUser?.email || 'host-admin',
       });
@@ -177,7 +185,7 @@ export default function Organizations() {
       </div>
 
       <div style={{ background: '#162B44', border: '1px solid #1E3557', borderRadius: '12px', overflow: 'hidden' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 70px 90px 150px 220px 110px', padding: '10px 20px', borderBottom: '1px solid #1E3557', fontSize: '11px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1.7fr 1.7fr 70px 90px 130px 230px 110px', padding: '10px 20px', borderBottom: '1px solid #1E3557', fontSize: '11px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           <span>Organization</span><span>Org ID</span><span>Users</span><span>Max Users</span><span>Plan</span><span>Pilot</span><span>Created</span>
         </div>
         {loading ? (
@@ -188,7 +196,7 @@ export default function Organizations() {
           const currentPlan = org.plan || 'essential';
           const planInfo = PLAN_OPTIONS.find(p => p.value === currentPlan) || PLAN_OPTIONS[0];
           return (
-          <div key={org.id} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 70px 90px 150px 220px 110px', padding: '14px 20px', borderBottom: '1px solid #0B1520', alignItems: 'center' }}>
+          <div key={org.id} style={{ display: 'grid', gridTemplateColumns: '1.7fr 1.7fr 70px 90px 130px 230px 110px', padding: '14px 20px', borderBottom: '1px solid #0B1520', alignItems: 'center' }}>
             <div style={{ fontSize: '14px', fontWeight: '600', color: '#f8fafc' }}>{org.name || org.id}</div>
             <div style={{ fontSize: '12px', color: '#64748b', fontFamily: "'JetBrains Mono', monospace", background: '#0B1520', padding: '3px 8px', borderRadius: '4px', display: 'inline-block', letterSpacing: '0.02em' }}>{org.id}</div>
             <div>
@@ -231,7 +239,9 @@ export default function Organizations() {
                 value={currentPlan}
                 onChange={e => handlePlanChange(org.id, e.target.value)}
                 disabled={updatingPlan === org.id}
+                title={planInfo.tooltip}
                 style={{
+                  width: '100%',
                   padding: '5px 10px',
                   background: '#0B1520',
                   border: `1px solid ${planInfo.color}40`,
@@ -244,6 +254,7 @@ export default function Organizations() {
                   letterSpacing: '0.03em',
                   textTransform: 'uppercase',
                   opacity: updatingPlan === org.id ? 0.5 : 1,
+                  boxSizing: 'border-box',
                 }}
               >
                 {PLAN_OPTIONS.map(p => (
